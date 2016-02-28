@@ -37,8 +37,9 @@ public class SlackAttachment {
 	public enum SlackAttachmentType {
 		WARNING, DANGER;
 		
+		@Override
 		public String toString() {
 			return this.name().toLowerCase();
-		};
+		}
 	}
 }

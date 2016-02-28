@@ -49,7 +49,7 @@ public class SlackNotifierPlugin extends SonarPlugin {
 	}
 
 	public List<Object> getExtensions() {
-		List<Object> extensions = new ArrayList<Object>();
+		List<Object> extensions = new ArrayList<>();
 		extensions.add(SlackNotificationChannel.class);
 		extensions.add(SlackClient.class);
 		extensions.addAll(getSlackProperties());
