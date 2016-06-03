@@ -33,7 +33,7 @@ import static org.mockito.Matchers.anyString;
 /**
  * Created by 616286 on 3.6.2016.
  */
-public class SlackPostProjectAnalysisTaskIT {
+public class SlackPostProjectAnalysisTaskTest {
 
     SlackPostProjectAnalysisTask t;
     private HttpClient httpClient;
