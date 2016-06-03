@@ -1,6 +1,7 @@
 package com.astrebel.sonarslack;
 
 import com.astrebel.sonarslack.message.SlackMessage;
+import com.astrebel.sonarslack.notification.SlackNotificationChannel;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;

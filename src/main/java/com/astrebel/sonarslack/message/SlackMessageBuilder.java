@@ -5,7 +5,7 @@ public class SlackMessageBuilder {
     public String build(SlackMessage message) {
         StringBuilder builder = new StringBuilder();
 
-        builder.append("payload={");
+        builder.append("{");
         if (message.getChannel() != null) {
             builder.append("\"channel\":\"");
             builder.append(message.getChannel());

@@ -1,5 +1,7 @@
-package com.astrebel.sonarslack;
+package com.astrebel.sonarslack.notification;
 
+import com.astrebel.sonarslack.SlackClient;
+import com.astrebel.sonarslack.SlackNotifierPlugin;
 import com.astrebel.sonarslack.message.SlackAttachment;
 import com.astrebel.sonarslack.message.SlackAttachment.SlackAttachmentType;
 import com.astrebel.sonarslack.message.SlackMessage;
@@ -16,6 +18,7 @@ public class SlackNotificationChannel extends NotificationChannel {
     private Settings settings;
 
     public SlackNotificationChannel(SlackClient slackClient, Settings settings) {
+        LOG.info("Constructor called");
         this.slackClient = slackClient;
         this.settings = settings;
     }
@@ -27,6 +30,7 @@ public class SlackNotificationChannel extends NotificationChannel {
         String slackUser = settings.getString(SlackNotifierPlugin.SLACK_SLACKUSER);
 
         if (hook == null) {
+            LOG.info("No slack webhook configured...");
             return;
         }
 

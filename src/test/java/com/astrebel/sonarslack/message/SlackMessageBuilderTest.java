@@ -6,6 +6,10 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
+/**
+ * https://api.slack.com/docs/attachments#message_formatting
+ * https://api.slack.com/docs/attachments
+ */
 public class SlackMessageBuilderTest {
 
     private SlackMessageBuilder messageBuilder;
@@ -20,10 +24,9 @@ public class SlackMessageBuilderTest {
         SlackMessage message = new SlackMessage("This is a test", "Sonar");
 
         String result = messageBuilder.build(message);
-        assertEquals("Wrong message result", "payload={\"username\":\"Sonar\",\"text\":\"This is a test\"}", result);
+        assertEquals("Wrong message result", "{\"username\":\"Sonar\",\"text\":\"This is a test\"}", result);
     }
 
-    // https://api.slack.com/docs/attachments
     @Test
     public void testBuildAttachmentMessage() {
         SlackMessage message = new SlackMessage("This is a test", "Sonar");
@@ -34,7 +37,7 @@ public class SlackMessageBuilderTest {
 
         String result = messageBuilder.build(message);
 
-        String expected = "payload={\"username\":\"Sonar\",\"text\":\"This is a test\",\"attachments\":["
+        String expected = "{\"username\":\"Sonar\",\"text\":\"This is a test\",\"attachments\":["
                 + "{\"text\":\"*TestAlert*\\n*Reason:*\\n- This is a test alert\",\"color\":\"warning\",\"fallback\": \"TestAlert: This is a test alert\"}]}";
         assertEquals("Wrong message result", expected, result);
     }
@@ -49,7 +52,7 @@ public class SlackMessageBuilderTest {
 
         String result = messageBuilder.build(message);
 
-        String expected = "payload={\"username\":\"Sonar\",\"text\":\"This is a test\",\"attachments\":["
+        String expected = "{\"username\":\"Sonar\",\"text\":\"This is a test\",\"attachments\":["
                 + "{\"text\":\"*TestAlert*\\n*Reason:*\\n- This is a test alert\\n- This is another test alert\",\"color\":\"warning\",\"fallback\": \"TestAlert: This is a test alert, This is another test alert\"}]}";
         assertEquals("Wrong message result", expected, result);
     }
@@ -60,7 +63,7 @@ public class SlackMessageBuilderTest {
         message.setChannel("TestChannel");
 
         String result = messageBuilder.build(message);
-        assertEquals("Wrong message result", "payload={\"channel\":\"TestChannel\",\"username\":\"Sonar\",\"text\":\"This is a test\"}", result);
+        assertEquals("Wrong message result", "{\"channel\":\"TestChannel\",\"username\":\"Sonar\",\"text\":\"This is a test\"}", result);
     }
 
     @Test
@@ -69,6 +72,6 @@ public class SlackMessageBuilderTest {
         message.setSlackUser("TestUser");
 
         String result = messageBuilder.build(message);
-        assertEquals("Wrong message result", "payload={\"username\":\"TestUser\",\"text\":\"This is a test\"}", result);
+        assertEquals("Wrong message result", "{\"username\":\"TestUser\",\"text\":\"This is a test\"}", result);
     }
 }

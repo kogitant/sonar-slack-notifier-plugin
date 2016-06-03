@@ -1,5 +1,8 @@
 package com.astrebel.sonarslack;
 
+import com.astrebel.sonarslack.notification.SlackNotificationChannel;
+import com.astrebel.sonarslack.platform.SlackServerStartStopHandler;
+import com.astrebel.sonarslack.posttask.SlackPostProjectAnalysisTask;
 import org.sonar.api.PropertyType;
 import org.sonar.api.SonarPlugin;
 import org.sonar.api.config.PropertyDefinition;
@@ -52,6 +55,8 @@ public class SlackNotifierPlugin extends SonarPlugin {
     public List<Object> getExtensions() {
         List<Object> extensions = new ArrayList<>();
         extensions.add(SlackNotificationChannel.class);
+        extensions.add(SlackPostProjectAnalysisTask.class);
+        extensions.add(SlackServerStartStopHandler.class);
         extensions.add(SlackClient.class);
         extensions.addAll(getSlackProperties());
         return extensions;
