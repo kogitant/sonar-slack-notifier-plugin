@@ -22,16 +22,18 @@ public class SlackClient {
 
     public void send(String hook, SlackMessage message) {
         HttpPost post = new HttpPost(hook);
-        HttpEntity entity = new StringEntity(new SlackMessageBuilder().build(message), "UTF-8");
+        String payload = new SlackMessageBuilder().build(message);
+        HttpEntity entity = new StringEntity(payload, "UTF-8");
         post.addHeader("Content-Type", "application/json");
         post.setEntity(entity);
         HttpClient client = HttpClientBuilder.create().build();
-        LOG.info("Pushing notifications to the Slack");
-
+        LOG.info("Sending message to slack: {}", payload);
         try {
             HttpResponse res = client.execute(post);
             if (res.getStatusLine().getStatusCode() != 200) {
-                LOG.warn("Failed to push to slack. Post body: '" + post.toString() + "'");
+                LOG.warn("Slack message sending failed. Hook=[{}]. Payload=[{}]", hook, payload);
+            }else{
+                LOG.info("Slack message sending succeeded");
             }
         } catch (IOException e) {
             LOG.warn("Failed to push to slack.", e);

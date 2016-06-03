@@ -5,7 +5,7 @@ public class SlackMessageBuilder {
     public String build(SlackMessage message) {
         StringBuilder builder = new StringBuilder();
 
-        builder.append("{");
+        builder.append("payload={");
         if (message.getChannel() != null) {
             builder.append("\"channel\":\"");
             builder.append(message.getChannel());
@@ -29,7 +29,7 @@ public class SlackMessageBuilder {
     }
 
     private String buildAttachment(SlackAttachment attachment) {
-        return "{\"text\":\"*" + attachment.getTitle() + "*\\n*Reason:*\\n" + attachment.getReasons() + "\",\"color\":\"" + attachment.getType()
-                + "\",\"mrkdwn_in\": [\"text\"]}";
+        return "{\"text\":\"*" + attachment.getTitle() + "*\\n*Reason:*\\n" + attachment.getFormattedReasons() + "\",\"color\":\"" + attachment.getType()
+                + "\",\"fallback\": \"" + attachment.getTitle() + ": " + attachment.getReasons() + "\"}";
     }
 }

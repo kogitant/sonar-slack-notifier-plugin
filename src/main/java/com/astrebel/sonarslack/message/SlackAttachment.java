@@ -22,16 +22,18 @@ public class SlackAttachment {
     }
 
     public void setReasons(String reasons) {
-        if (reasons != null && reasons.contains(",")) {
-            this.reasons = "- " + reasons.replaceAll(",", "\\\\n-");
-        } else {
-            this.reasons = reasons;
-        }
-
+        this.reasons = reasons;
     }
 
     public SlackAttachmentType getType() {
         return type;
+    }
+
+    public String getFormattedReasons() {
+        if (reasons != null){
+            return "- " + reasons.replaceAll(",", "\\\\n-");
+        }
+        return "";
     }
 
     public enum SlackAttachmentType {
