@@ -4,20 +4,25 @@ public class SlackMessage {
 
     private String channel;
     private String slackUser;
+    private String webHookUrl;
     private String shortText;
     private SlackAttachment attachment;
 
+    /**
+     * @deprecated Use com.astrebel.sonarslack.message.SlackMessage#SlackMessage(java.lang.String, java.lang.String, java.lang.String) instead
+     * @param shortText
+     * @param slackUser
+     */
+    @Deprecated
     public SlackMessage(String shortText, String slackUser) {
         this.shortText = shortText;
         this.slackUser = slackUser;
     }
 
-    public SlackMessage(String channel, String slackUser, String shortText, SlackAttachment attachment) {
-        super();
+    public SlackMessage(String channel, String slackUser, String webHookUrl) {
         this.channel = channel;
         this.slackUser = slackUser;
-        this.shortText = shortText;
-        this.attachment = attachment;
+        this.webHookUrl = webHookUrl;
     }
 
     public String getChannel() {
@@ -50,5 +55,13 @@ public class SlackMessage {
 
     public void setAttachment(SlackAttachment attachment) {
         this.attachment = attachment;
+    }
+
+    public String getWebHookUrl() {
+        return webHookUrl;
+    }
+
+    public void setWebHookUrl(String webHookUrl) {
+        this.webHookUrl = webHookUrl;
     }
 }

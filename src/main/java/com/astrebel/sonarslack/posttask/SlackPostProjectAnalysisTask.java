@@ -10,6 +10,8 @@ import org.sonar.api.config.Settings;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
 
+import java.util.Locale;
+
 /**
  * Created by 616286 on 3.6.2016.
  */
@@ -17,66 +19,66 @@ public class SlackPostProjectAnalysisTask implements PostProjectAnalysisTask {
 
     private static final Logger LOG = Loggers.get(SlackPostProjectAnalysisTask.class);
 
+    org.sonar.api.i18n.I18n i18n;
     private SlackClient slackClient;
     private Settings settings;
 
-    public SlackPostProjectAnalysisTask(SlackClient slackClient, Settings settings) {
+    public SlackPostProjectAnalysisTask(SlackClient slackClient, Settings settings, org.sonar.api.i18n.I18n i18n) {
         LOG.info("Constructor called");
         this.slackClient = slackClient;
         this.settings = settings;
+        this.i18n = i18n;
     }
 
     @Override
     public void finished(ProjectAnalysis analysis) {
-        String hook = settings.getString(SlackNotifierPlugin.SLACK_HOOK);
-        String channel = settings.getString(SlackNotifierPlugin.SLACK_CHANNEL);
-        String slackUser = settings.getString(SlackNotifierPlugin.SLACK_SLACKUSER);
-
-        if (hook == null) {
-            LOG.info("No slack webhook configured...");
+        LOG.info("New analysis: " + analysis.toString());
+        SlackMessage message = slackMessage(settings);
+        if (message == null) {
+            LOG.info("Slack integration not properly configured. Properties are [{}]", settings.getProperties());
             return;
         }
+        String shortText = "Project [" + analysis.getProject().getName() + "] analyzed. See " + projectUrl(analysis);
 
-        LOG.info("New analysis: " + analysis.toString());
-        /*
-        New analysis: ProjectAnalysis{
-        ceTask=CeTaskImpl{id='AVUV4AmWMV3GgauddeNg', status=SUCCESS},
-        project=ProjectImpl{uuid='AVUVezVeHpvlfGhlS1Fr', key='com.astrebel.sonarslack:sonar-slack-notifier-plugin',
-        name='SonarQube Slack Notifier Plugin'},
-        date=Fri Jun 03 13:47:25 EEST 2016,
-        qualityGate=QualityGateImpl{
-            id='1', name='SonarQube way', status=ERROR,
-            conditions=[
-                ConditionImpl{status=OK, metricKey='new_vulnerabilities', operator=GREATER_THAN, errorThreshold='0', warningThreshold='null', onLeakPeriod=true, value='0'},
-                ConditionImpl{status=OK, metricKey='new_bugs', operator=GREATER_THAN, errorThreshold='0', warningThreshold='null', onLeakPeriod=true, value='0'},
-                ConditionImpl{status=OK, metricKey='new_sqale_debt_ratio', operator=GREATER_THAN, errorThreshold='5', warningThreshold='null', onLeakPeriod=true, value='1.358811040339703'},
-                ConditionImpl{status=ERROR, metricKey='new_coverage', operator=LESS_THAN, errorThreshold='80', warningThreshold='null', onLeakPeriod=true, value='8.24742268041237'}
-               ]
-               }
-               }
-         */
-
-        String defaultMessage = "Project [" + analysis.getProject().getName() + "] analyzed";
-
-        SlackMessage message = new SlackMessage(defaultMessage, slackUser);
-        message.setChannel(channel);
-        message.setShortText(defaultMessage);
-
-        try{
-            SlackAttachment a = new SlackAttachment();
-            int qualityCateConditionsFailed = 0;
-            for (QualityGate.Condition condition : analysis.getQualityGate().getConditions()) {
-                if (QualityGate.EvaluationStatus.ERROR.equals(condition.getStatus())) {
-                    qualityCateConditionsFailed++;
-                    a.getReasons().add(condition.getMetricKey() + " " + condition.getStatus() + ": " + condition.getValue());
-                }
-            }
+        SlackAttachment a = new SlackAttachment();
+        QualityGate qualityGate = analysis.getQualityGate();
+        if(qualityGate!=null){
+            shortText += ". Quality gate status is " + qualityGate.getStatus();
+            qualityGate.getConditions().stream().forEach(condition -> {
+                a.getReasons().add(translate(condition));
+            });
             message.setAttachment(a);
-        }catch(NullPointerException e){
-            // Ugh.
-            LOG.error("NPE");
         }
+        message.setShortText(shortText);
+        slackClient.send(message);
+    }
 
-        slackClient.send(hook, message);
+    private String projectUrl(ProjectAnalysis analysis) {
+        return settings.getString("sonar.core.serverBaseURL") + "overview?id=" + analysis.getProject().getKey();
+    }
+
+    private SlackMessage slackMessage(Settings settings) {
+        String hook = settings.getString(SlackNotifierPlugin.SLACK_HOOK);
+        if(hook == null) return null;
+        String channel = settings.getString(SlackNotifierPlugin.SLACK_CHANNEL);
+        if(channel == null) return null;
+        String slackUser = settings.getString(SlackNotifierPlugin.SLACK_SLACKUSER);
+        if(slackUser == null) return null;
+        return new SlackMessage(channel, slackUser, hook);
+    }
+
+    private String translate(QualityGate.Condition condition) {
+        StringBuilder sb = new StringBuilder();
+        // sonarqube/sonar-core/src/main/resources/org/sonar/l10n/core.properties
+        sb.append(i18n.message(Locale.ENGLISH, "metric."+condition.getMetricKey()+".name", condition.getMetricKey()));
+        sb.append(" ");
+        sb.append(i18n.message(Locale.ENGLISH, "overview.gate."+condition.getStatus(), condition.getStatus().name()));
+        sb.append(" ");
+        sb.append("Value [").append(condition.getValue()).append("], ");
+        sb.append("operator [").append(condition.getOperator()).append("], ");
+        sb.append("warning threshold [").append(condition.getWarningThreshold()).append("], ");
+        sb.append("error threshold [").append(condition.getErrorThreshold()).append("], ");
+        sb.append("on leak period [").append(condition.isOnLeakPeriod()).append(']');
+        return sb.toString();
     }
 }
