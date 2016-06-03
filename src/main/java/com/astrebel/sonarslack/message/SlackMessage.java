@@ -8,17 +8,6 @@ public class SlackMessage {
     private String shortText;
     private SlackAttachment attachment;
 
-    /**
-     * @deprecated Use com.astrebel.sonarslack.message.SlackMessage#SlackMessage(java.lang.String, java.lang.String, java.lang.String) instead
-     * @param shortText
-     * @param slackUser
-     */
-    @Deprecated
-    public SlackMessage(String shortText, String slackUser) {
-        this.shortText = shortText;
-        this.slackUser = slackUser;
-    }
-
     public SlackMessage(String channel, String slackUser, String webHookUrl) {
         this.channel = channel;
         this.slackUser = slackUser;

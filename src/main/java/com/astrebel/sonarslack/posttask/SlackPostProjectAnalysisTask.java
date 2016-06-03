@@ -44,9 +44,7 @@ public class SlackPostProjectAnalysisTask implements PostProjectAnalysisTask {
         QualityGate qualityGate = analysis.getQualityGate();
         if(qualityGate!=null){
             shortText += ". Quality gate status is " + qualityGate.getStatus();
-            qualityGate.getConditions().stream().forEach(condition -> {
-                a.getReasons().add(translate(condition));
-            });
+            qualityGate.getConditions().stream().forEach(condition -> a.getReasons().add(translate(condition)));
             message.setAttachment(a);
         }
         message.setShortText(shortText);
@@ -59,11 +57,17 @@ public class SlackPostProjectAnalysisTask implements PostProjectAnalysisTask {
 
     private SlackMessage slackMessage(Settings settings) {
         String hook = settings.getString(SlackNotifierPlugin.SLACK_HOOK);
-        if(hook == null) return null;
+        if(hook == null) {
+            return null;
+        }
         String channel = settings.getString(SlackNotifierPlugin.SLACK_CHANNEL);
-        if(channel == null) return null;
+        if(channel == null) {
+            return null;
+        }
         String slackUser = settings.getString(SlackNotifierPlugin.SLACK_SLACKUSER);
-        if(slackUser == null) return null;
+        if(slackUser == null) {
+            return null;
+        }
         return new SlackMessage(channel, slackUser, hook);
     }
 

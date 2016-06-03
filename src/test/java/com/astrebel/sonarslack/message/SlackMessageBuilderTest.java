@@ -20,7 +20,8 @@ public class SlackMessageBuilderTest {
 
     @Test
     public void testBuildSimpleMessage() {
-        SlackMessage message = new SlackMessage("This is a test", "Sonar");
+        SlackMessage message = new SlackMessage(null,"Sonar","url");
+        message.setShortText("This is a test");
 
         String result = messageBuilder.build(message);
         assertEquals("Wrong message result", "{\"username\":\"Sonar\",\"text\":\"This is a test\"}", result);
@@ -28,7 +29,8 @@ public class SlackMessageBuilderTest {
 
     @Test
     public void testBuildAttachmentMessage() {
-        SlackMessage message = new SlackMessage("This is a test", "Sonar");
+        SlackMessage message = new SlackMessage(null,"Sonar","url");
+        message.setShortText("This is a test");
         SlackAttachment attachment = new SlackAttachment();
         attachment.addReason("This is a test alert");
         message.setAttachment(attachment);
@@ -42,7 +44,8 @@ public class SlackMessageBuilderTest {
 
     @Test
     public void testBuildAttachmentMessageMultipleReasons() {
-        SlackMessage message = new SlackMessage("This is a test", "Sonar");
+        SlackMessage message = new SlackMessage(null,"Sonar","url");
+        message.setShortText("This is a test");
         SlackAttachment attachment = new SlackAttachment();
         attachment.addReason("This is a test alert");
         attachment.addReason("This is another test alert");
@@ -57,7 +60,8 @@ public class SlackMessageBuilderTest {
 
     @Test
     public void testBuildMessageWithChannel() {
-        SlackMessage message = new SlackMessage("This is a test", "Sonar");
+        SlackMessage message = new SlackMessage("channel","Sonar","url");
+        message.setShortText("This is a test");
         message.setChannel("TestChannel");
 
         String result = messageBuilder.build(message);
@@ -66,7 +70,8 @@ public class SlackMessageBuilderTest {
 
     @Test
     public void testBuildMessageWithUser() {
-        SlackMessage message = new SlackMessage("This is a test", "Sonar");
+        SlackMessage message = new SlackMessage(null,"Sonar","url");
+        message.setShortText("This is a test");
         message.setSlackUser("TestUser");
 
         String result = messageBuilder.build(message);
