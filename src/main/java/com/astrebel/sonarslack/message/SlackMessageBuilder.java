@@ -29,7 +29,7 @@ public class SlackMessageBuilder {
     }
 
     private String buildAttachment(SlackAttachment attachment) {
-        return "{\"text\":\"*" + attachment.getTitle() + "*\\n*Reason:*\\n" + attachment.getFormattedReasons() + "\",\"color\":\"" + attachment.getType()
-                + "\",\"fallback\": \"" + attachment.getTitle() + ": " + attachment.getReasons() + "\"}";
+        return "{\"text\":\"" + attachment.formatAsText() + "\"," +
+                "\"fallback\": \"" + attachment.formatAsFallback() + "\"}";
     }
 }

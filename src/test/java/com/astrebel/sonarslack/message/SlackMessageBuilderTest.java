@@ -1,6 +1,5 @@
 package com.astrebel.sonarslack.message;
 
-import com.astrebel.sonarslack.message.SlackAttachment.SlackAttachmentType;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -30,30 +29,29 @@ public class SlackMessageBuilderTest {
     @Test
     public void testBuildAttachmentMessage() {
         SlackMessage message = new SlackMessage("This is a test", "Sonar");
-        SlackAttachment attachment = new SlackAttachment(SlackAttachmentType.WARNING);
-        attachment.setTitle("TestAlert");
-        attachment.setReasons("This is a test alert");
+        SlackAttachment attachment = new SlackAttachment();
+        attachment.addReason("This is a test alert");
         message.setAttachment(attachment);
 
         String result = messageBuilder.build(message);
 
         String expected = "{\"username\":\"Sonar\",\"text\":\"This is a test\",\"attachments\":["
-                + "{\"text\":\"*TestAlert*\\n*Reason:*\\n- This is a test alert\",\"color\":\"warning\",\"fallback\": \"TestAlert: This is a test alert\"}]}";
+                + "{\"text\":\"- This is a test alert\\n\",\"fallback\": \"Reasons: This is a test alert, \"}]}";
         assertEquals("Wrong message result", expected, result);
     }
 
     @Test
     public void testBuildAttachmentMessageMultipleReasons() {
         SlackMessage message = new SlackMessage("This is a test", "Sonar");
-        SlackAttachment attachment = new SlackAttachment(SlackAttachmentType.WARNING);
-        attachment.setTitle("TestAlert");
-        attachment.setReasons("This is a test alert, This is another test alert");
+        SlackAttachment attachment = new SlackAttachment();
+        attachment.addReason("This is a test alert");
+        attachment.addReason("This is another test alert");
         message.setAttachment(attachment);
 
         String result = messageBuilder.build(message);
 
         String expected = "{\"username\":\"Sonar\",\"text\":\"This is a test\",\"attachments\":["
-                + "{\"text\":\"*TestAlert*\\n*Reason:*\\n- This is a test alert\\n- This is another test alert\",\"color\":\"warning\",\"fallback\": \"TestAlert: This is a test alert, This is another test alert\"}]}";
+                + "{\"text\":\"- This is a test alert\\n- This is another test alert\\n\",\"fallback\": \"Reasons: This is a test alert, This is another test alert, \"}]}";
         assertEquals("Wrong message result", expected, result);
     }
 

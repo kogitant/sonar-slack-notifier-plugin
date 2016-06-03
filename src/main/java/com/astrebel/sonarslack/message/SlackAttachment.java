@@ -1,47 +1,38 @@
 package com.astrebel.sonarslack.message;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SlackAttachment {
-    private String title;
-    private SlackAttachmentType type;
-    private String reasons;
+    private List<String> reasons = new ArrayList<>();
 
-    public SlackAttachment(SlackAttachmentType type) {
-        this.type = type;
-    }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getReasons() {
+    public List<String> getReasons() {
         return reasons;
     }
 
-    public void setReasons(String reasons) {
-        this.reasons = reasons;
+    public void addReasons
+            (List<String> reasons) {
+        this.reasons.addAll(reasons);
     }
 
-    public SlackAttachmentType getType() {
-        return type;
+    public void addReason(String s){
+        this.reasons.add(s);
     }
 
-    public String getFormattedReasons() {
-        if (reasons != null){
-            return "- " + reasons.replaceAll(",", "\\\\n-");
+    public String formatAsText() {
+        String s = "";
+        for (String reason : reasons) {
+            s+= "- " + reason + "\\n";
         }
-        return "";
+        return s;
     }
 
-    public enum SlackAttachmentType {
-        WARNING, DANGER;
-
-        @Override
-        public String toString() {
-            return this.name().toLowerCase();
+    public String formatAsFallback() {
+        String s = "Reasons: ";
+        for (String reason : reasons) {
+            s+= reason + ", ";
         }
+        return s;
     }
 }

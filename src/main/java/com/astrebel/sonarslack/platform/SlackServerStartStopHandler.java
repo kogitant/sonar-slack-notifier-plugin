@@ -3,7 +3,6 @@ package com.astrebel.sonarslack.platform;
 import com.astrebel.sonarslack.SlackClient;
 import com.astrebel.sonarslack.SlackNotifierPlugin;
 import com.astrebel.sonarslack.message.SlackMessage;
-import com.astrebel.sonarslack.notification.SlackNotificationChannel;
 import org.sonar.api.config.Settings;
 import org.sonar.api.platform.Server;
 import org.sonar.api.platform.ServerStartHandler;
@@ -14,7 +13,7 @@ import org.sonar.api.utils.log.Loggers;
  * Created by 616286 on 3.6.2016.
  */
 public class SlackServerStartStopHandler implements ServerStartHandler {
-    private static final Logger LOG = Loggers.get(SlackNotificationChannel.class);
+    private static final Logger LOG = Loggers.get(SlackServerStartStopHandler.class);
 
     private SlackClient slackClient;
     private Settings settings;
