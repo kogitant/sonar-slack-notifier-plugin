@@ -7,14 +7,13 @@ import com.astrebel.sonarslack.notification.SlackNotificationChannel;
 import org.sonar.api.config.Settings;
 import org.sonar.api.platform.Server;
 import org.sonar.api.platform.ServerStartHandler;
-import org.sonar.api.platform.ServerStopHandler;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
 
 /**
  * Created by 616286 on 3.6.2016.
  */
-public class SlackServerStartStopHandler implements ServerStartHandler,ServerStopHandler {
+public class SlackServerStartStopHandler implements ServerStartHandler {
     private static final Logger LOG = Loggers.get(SlackNotificationChannel.class);
 
     private SlackClient slackClient;
@@ -42,10 +41,5 @@ public class SlackServerStartStopHandler implements ServerStartHandler,ServerSto
         SlackMessage message = new SlackMessage(m, slackUser);
         message.setChannel(channel);
         slackClient.send(hook, message);
-    }
-
-    @Override
-    public void onServerStop(Server server) {
-        sendMessage(server.getPublicRootUrl() + " stopped");
     }
 }
