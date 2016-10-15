@@ -11,8 +11,8 @@ Tested with SonarQube 5.5 against Slack on 2016.06.03
 
 
 # SonarQube Plugin Development guides
+* http://docs.sonarqube.org/display/DEV/Adding+Hooks
 * http://docs.sonarqube.org/display/DEV/Build+plugin
-* http://docs.sonarqube.org/display/DEV/Coding+a+Plugin
 
 # Slack webhook integration and message formatting guides
  * https://api.slack.com/custom-integrations
