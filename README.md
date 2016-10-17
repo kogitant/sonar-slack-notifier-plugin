@@ -4,8 +4,19 @@ SonarQube plugin for sending notifications to Slack
 This plugin sends a Slack message of project analysis outcome to congired project specific slack channel.
 The plugin uses Incoming Web Hook as the integration mechanism with Slack.
 
-# Build & Install
-To build the plugin call **mvn clean package** (or download the current release). The artifact must be copied to the *SONAR_HOME/extensions/plugins* folder and sonarqube must be restarted.
+# Install
+The plugin must be placed in *SONAR_HOME/extensions/plugins* directory and SonarQube must be restarted.
+
+## Using latest release
+You can find the latest release from https://github.com/kogitant/sonar-slack-notifier-plugin/releases/ page.
+Download the 
+
+## From sources
+To build the plugin simply run
+```
+mvn clean package
+```
+
 
 # Configuration
 After the plugin has been installed, you need to configure it.
