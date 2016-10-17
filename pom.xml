@@ -86,6 +86,7 @@
         <version>1.17</version>
         <extensions>true</extensions>
         <configuration>
+          <jarName>cks-slack-notifier-${project.version}</jarName>
           <pluginKey>cks-slack-notifier</pluginKey>
           <pluginClass>com.koant.sonar.slacknotifier.SlackNotifierPlugin</pluginClass>
           <pluginName>CKS Slack Notifier</pluginName>
