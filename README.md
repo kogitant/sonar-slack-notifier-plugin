@@ -24,8 +24,8 @@ Although SonarQube offers project level configurations for some plugins, they ca
 * https://github.com/seratch/jslack
 
 # SonarQube Plugin Development guides
+* http://docs.sonarqube.org/display/DEV/Adding+Hooks
 * http://docs.sonarqube.org/display/DEV/Build+plugin
-* http://docs.sonarqube.org/display/DEV/Coding+a+Plugin
 
 # Slack webhook integration and message formatting guides
  * https://api.slack.com/custom-integrations
