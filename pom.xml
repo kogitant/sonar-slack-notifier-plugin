@@ -1,17 +1,16 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.astrebel.sonarslack</groupId>
+  <groupId>com.koant.sonar.slack</groupId>
   <artifactId>sonar-slack-notifier-plugin</artifactId>
-  <version>0.1</version>
+  <version>1.0</version>
   <packaging>sonar-plugin</packaging>
 
-  <name>SonarQube Slack Notifier Plugin</name>
+  <name>CKS Slack Notifier Plugin</name>
   <description>Sends notifications to Slack.</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <sonar.buildVersion>5.3</sonar.buildVersion>
     <sonar.pluginName>Slack Notifier</sonar.pluginName>
     <project.targetJdk>1.8</project.targetJdk>
     <maven.compiler.source>1.8</maven.compiler.source>
@@ -19,17 +18,13 @@
   </properties>
 
   <dependencies>
+    <!-- Dependencies provided by SonarQube server -->
+    <!-- https://mvnrepository.com/artifact/org.sonarsource.sonarqube/sonar-plugin-api -->
     <dependency>
       <groupId>org.sonarsource.sonarqube</groupId>
       <artifactId>sonar-plugin-api</artifactId>
-      <!-- minimal version of SonarQube to support. Note that the groupId was "org.codehaus.sonar" before version 5.2 -->
-      <version>5.5</version>
+      <version>6.1</version>
       <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>4.4</version>
     </dependency>
     <dependency>
       <groupId>commons-logging</groupId>
@@ -37,16 +32,19 @@
       <version>1.2</version>
       <scope>provided</scope>
     </dependency>
+
+    <!-- Dependencies of this plugin, not provided by SonarQube -->
+    <dependency>
+      <groupId>com.github.seratch</groupId>
+      <artifactId>jslack</artifactId>
+      <version>1.0.3</version>
+    </dependency>
+
+    <!-- Testing dependencies -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.12</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.objenesis</groupId>
-      <artifactId>objenesis</artifactId>
-      <version>2.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -85,13 +83,13 @@
       <plugin>
         <groupId>org.sonarsource.sonar-packaging-maven-plugin</groupId>
         <artifactId>sonar-packaging-maven-plugin</artifactId>
-        <version>1.16</version>
+        <version>1.17</version>
         <extensions>true</extensions>
         <configuration>
-          <pluginKey>slacknotifier</pluginKey>
-          <pluginClass>com.astrebel.sonarslack.SlackNotifierPlugin</pluginClass>
-          <pluginName>Slack Notifier</pluginName>
-          <pluginDescription>Sends notifications to Slack.</pluginDescription>
+          <pluginKey>cks-slack-notifier</pluginKey>
+          <pluginClass>com.koant.sonar.slacknotifier.SlackNotifierPlugin</pluginClass>
+          <pluginName>CKS Slack Notifier</pluginName>
+          <pluginDescription>Sends notifications to Slack</pluginDescription>
         </configuration>
       </plugin>
     </plugins>
