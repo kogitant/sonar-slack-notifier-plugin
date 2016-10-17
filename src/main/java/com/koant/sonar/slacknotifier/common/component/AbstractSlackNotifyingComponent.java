@@ -97,6 +97,23 @@ public abstract class AbstractSlackNotifyingComponent {
         return projectSlackChannelConfigMap.get(projectKey);
     }
 
+    /**
+     * Returns the sonar server url, with a trailing /
+     * @return
+     */
+    protected String getSonarServerUrl() {
+        String u = settings.getString("sonar.core.serverBaseURL");
+        if(u==null){
+            return null;
+        }
+        if(u.endsWith("/")){
+            return u;
+        }
+        return u + "/";
+    }
+
+
+
     private static Map<String, ProjectSlackChannelConfig> buildProjectSlackChannelConfigByProjectKeyMap(Settings settings) {
         Map<String, ProjectSlackChannelConfig> map = new HashMap<>();
         String[] projectSlackChannelConfigIndexes = settings.getStringArray(SlackNotifierProp.CHANNELS.property());

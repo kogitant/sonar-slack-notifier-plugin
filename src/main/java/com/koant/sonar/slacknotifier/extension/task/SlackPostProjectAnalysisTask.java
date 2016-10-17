@@ -81,7 +81,7 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
     }
 
     private String projectUrl(ProjectAnalysis analysis) {
-        return settings.getString("sonar.core.serverBaseURL") + "overview?id=" + analysis.getProject().getKey();
+        return getSonarServerUrl() + "overview?id=" + analysis.getProject().getKey();
     }
 
 
