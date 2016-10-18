@@ -63,3 +63,10 @@ The result should be something that looks like this in Slack:
  * https://api.slack.com/docs/attachments#message_formatting
  * https://api.slack.com/docs/attachments
 
+
+# Analyzing this project with unit test and integration test coverage
+```
+    mvn clean jacoco:prepare-agent install -DskipITs=true
+    mvn jacoco:prepare-agent-integration failsafe:integration-test
+    mvn sonar-maven-plugin:sonar -Dsonar.host.url=http://localhost:9000
+```
