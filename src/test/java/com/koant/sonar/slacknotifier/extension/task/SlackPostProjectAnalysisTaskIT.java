@@ -8,31 +8,34 @@ import com.github.seratch.jslack.api.webhook.WebhookResponse;
 import com.koant.sonar.slacknotifier.common.SlackNotifierProp;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.sonar.api.ce.posttask.*;
 import org.sonar.api.config.MapSettings;
 import org.sonar.api.config.Settings;
+import org.sonar.api.i18n.I18n;
 
 import java.util.*;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 /**
  * Created by 616286 on 3.6.2016.
  */
-public class SlackPostProjectAnalysisTaskTest {
+public class SlackPostProjectAnalysisTaskIT {
 
     SlackPostProjectAnalysisTask t;
     private Slack slackClient;
     private Settings settings;
     private String hook;
+    I18n i18n;
 
     @Before
-    public void before(){
+    public void before() {
         settings = new MapSettings();
         settings.setProperty(SlackNotifierProp.ENABLED.property(), "true");
         hook = "hook";
@@ -40,11 +43,18 @@ public class SlackPostProjectAnalysisTaskTest {
         settings.setProperty(SlackNotifierProp.CHANNEL.property(), "channel");
         settings.setProperty(SlackNotifierProp.USER.property(), "user");
         settings.setProperty(SlackNotifierProp.CHANNELS.property(), "com.koant.sonar.slack:sonar-slack-notifier-plugin");
-        settings.setProperty(SlackNotifierProp.CHANNELS.property()+".com.koant.sonar.slack:sonar-slack-notifier-plugin."+SlackNotifierProp.PROJECT.property(), "com.koant.sonar.slack:sonar-slack-notifier-plugin");
-        settings.setProperty(SlackNotifierProp.CHANNELS.property()+".com.koant.sonar.slack:sonar-slack-notifier-plugin."+SlackNotifierProp.CHANNEL.property(), "#random");
-        settings.setProperty("sonar.core.serverBaseURL","http://your.sonar.com/");
-        slackClient =Mockito.mock(Slack.class);
-        t = new SlackPostProjectAnalysisTask(slackClient, settings);
+        settings.setProperty(SlackNotifierProp.CHANNELS.property() + ".com.koant.sonar.slack:sonar-slack-notifier-plugin." + SlackNotifierProp.PROJECT.property(), "com.koant.sonar.slack:sonar-slack-notifier-plugin");
+        settings.setProperty(SlackNotifierProp.CHANNELS.property() + ".com.koant.sonar.slack:sonar-slack-notifier-plugin." + SlackNotifierProp.CHANNEL.property(), "#random");
+        settings.setProperty("sonar.core.serverBaseURL", "http://your.sonar.com/");
+        slackClient = Mockito.mock(Slack.class);
+        i18n = Mockito.mock(I18n.class);
+        Mockito.when(i18n.message(Matchers.any(Locale.class), anyString(), anyString())).thenAnswer(new Answer<String>() {
+             @Override
+             public String answer(InvocationOnMock invocation) throws Throwable {
+                                return (String)invocation.getArguments()[2];
+                            }
+         });
+        t = new SlackPostProjectAnalysisTask(slackClient, settings, i18n);
     }
 
     @Test
@@ -242,7 +252,7 @@ public class SlackPostProjectAnalysisTaskTest {
             }
         };
 
-        WebhookResponse webhookResponse =  WebhookResponse.builder().code(200).build();
+        WebhookResponse webhookResponse = WebhookResponse.builder().code(200).build();
         when(slackClient.send(anyString(), any(Payload.class))).thenReturn(webhookResponse);
 
         t.finished(analysis);
@@ -259,29 +269,29 @@ public class SlackPostProjectAnalysisTaskTest {
         List<Attachment> attachments = new ArrayList<>();
         List<Field> fields = new ArrayList<>();
         fields.add(Field.builder()
-                .title("metric_key_1: OK")
-                .value("Value [0], operator [EQUALS], warning threshold [-1], error threshold [1], on leak period [false]")
-                .valueShortEnough(false)
+            .title("metric_key_1: OK")
+            .value("Value [0], operator [EQUALS], warning threshold [-1], error threshold [1], on leak period [false]")
+            .valueShortEnough(false)
             .build());
         fields.add(Field.builder()
-                .title("metric_key_2: ERROR")
-                .value("Value [101], operator [GREATER_THAN], warning threshold [50], error threshold [100], on leak period [false]")
-                .valueShortEnough(false)
-                .build());
+            .title("metric_key_2: ERROR")
+            .value("Value [101], operator [GREATER_THAN], warning threshold [50], error threshold [100], on leak period [false]")
+            .valueShortEnough(false)
+            .build());
         fields.add(Field.builder()
-                .title("metric_key_3")
-                .value("NO_VALUE")
-                .valueShortEnough(true)
-                .build());
+            .title("metric_key_3")
+            .value("NO_VALUE")
+            .valueShortEnough(true)
+            .build());
         attachments.add(Attachment.builder()
-        .fields(fields)
-        .build());
+            .fields(fields)
+            .build());
         Payload payload = Payload.builder()
-                .text("Project [Foobar] analyzed. See http://your.sonar.com/overview?id=com.koant.sonar.slack:sonar-slack-notifier-plugin. Quality gate status is OK")
-                .channel("#random")
-                .username("user")
-                .attachments(attachments)
-                .build();
+            .text("Project [Foobar] analyzed. See http://your.sonar.com/overview?id=com.koant.sonar.slack:sonar-slack-notifier-plugin. Quality gate status is OK")
+            .channel("#random")
+            .username("user")
+            .attachments(attachments)
+            .build();
         Mockito.verify(slackClient, times(1)).send(eq(hook), eq(payload));
 
         /*

@@ -17,6 +17,7 @@ class ProjectSlackChannelConfig {
 
     /**
      * Cloning constructor
+     *
      * @param c
      */
     public ProjectSlackChannelConfig(ProjectSlackChannelConfig c) {

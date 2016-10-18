@@ -34,7 +34,7 @@ public abstract class AbstractSlackNotifyingComponent {
      * 4) thus when the instance is used to perform something, we must refresh the projectSlackChannelConfigMap when the execution starts
      * </pre>
      */
-    protected void refreshSettings(){
+    protected void refreshSettings() {
         LOG.info("Refreshing settings");
         refreshSlackChannelConfig();
     }
@@ -42,20 +42,22 @@ public abstract class AbstractSlackNotifyingComponent {
     private void refreshSlackChannelConfig() {
         LOG.info("Refreshing slack channel config");
         Set<ProjectSlackChannelConfig> oldValues = new HashSet<>();
-        this.projectSlackChannelConfigMap.values().forEach(c -> {oldValues.add(new ProjectSlackChannelConfig(c));});
+        this.projectSlackChannelConfigMap.values().forEach(c -> {
+            oldValues.add(new ProjectSlackChannelConfig(c));
+        });
         this.projectSlackChannelConfigMap = buildProjectSlackChannelConfigByProjectKeyMap(settings);
         Set<ProjectSlackChannelConfig> newValues = new HashSet<>(this.projectSlackChannelConfigMap.values());
-        if(!oldValues.equals(newValues)){
+        if (!oldValues.equals(newValues)) {
             LOG.info("Old configs [{}] --> new configs [{}]", oldValues, newValues);
         }
     }
 
-    protected boolean taskEnabled(String projectKey){
-        if(!isPluginEnabled()){
+    protected boolean taskEnabled(String projectKey) {
+        if (!isPluginEnabled()) {
             LOG.info("Slack notifier plugin disabled, skipping. Settings are [{}]", logRelevantSettings());
             return false;
         }
-        if(!isTaskEnabled(projectKey)){
+        if (!isTaskEnabled(projectKey)) {
             LOG.info("Post analysis task notifications disabled, skipping. Settings are [{}]", logRelevantSettings());
             return false;
         }
@@ -81,12 +83,12 @@ public abstract class AbstractSlackNotifyingComponent {
     private boolean isTaskEnabled(String projectKey) {
         ProjectSlackChannelConfig projectSlackChannelConfig = getProjectSlackChannelConfig(projectKey);
         // Not configured at all
-        if(projectSlackChannelConfig==null){
+        if (projectSlackChannelConfig == null) {
             LOG.info("Could not find slack channel for project [{}] in [{}]", projectKey, projectSlackChannelConfigMap);
             return false;
         }
         // Disabled due to missing channel value
-        if(projectSlackChannelConfig.getSlackChannel()==null || "".equals(projectSlackChannelConfig.getSlackChannel().trim())){
+        if (projectSlackChannelConfig.getSlackChannel() == null || "".equals(projectSlackChannelConfig.getSlackChannel().trim())) {
             LOG.info("Slack channel for project [{}] is blank, notifications disabled", projectKey);
             return false;
         }
@@ -99,19 +101,19 @@ public abstract class AbstractSlackNotifyingComponent {
 
     /**
      * Returns the sonar server url, with a trailing /
+     *
      * @return
      */
     protected String getSonarServerUrl() {
         String u = settings.getString("sonar.core.serverBaseURL");
-        if(u==null){
+        if (u == null) {
             return null;
         }
-        if(u.endsWith("/")){
+        if (u.endsWith("/")) {
             return u;
         }
         return u + "/";
     }
-
 
 
     private static Map<String, ProjectSlackChannelConfig> buildProjectSlackChannelConfigByProjectKeyMap(Settings settings) {
@@ -123,7 +125,7 @@ public abstract class AbstractSlackNotifyingComponent {
             String projectKey = settings.getString(projectKeyProperty);
             if (projectKey == null) {
                 throw MessageException.of("Slack notifier configuration is corrupted. At least one project specific parameter has no project key. " +
-                        "Contact your administrator to update this configuration in the global administration section of SonarQube.");
+                    "Contact your administrator to update this configuration in the global administration section of SonarQube.");
             }
             ProjectSlackChannelConfig value = ProjectSlackChannelConfig.create(settings, projectSlackChannelConfigIndex);
             LOG.info("Found project slack channel configuration [{}]", value);
@@ -133,9 +135,8 @@ public abstract class AbstractSlackNotifyingComponent {
     }
 
 
-
     private String logRelevantSettings() {
-        Map<String,String> pluginSettings = new HashMap<>();
+        Map<String, String> pluginSettings = new HashMap<>();
         mapSetting(pluginSettings, SlackNotifierProp.HOOK);
         mapSetting(pluginSettings, SlackNotifierProp.USER);
         mapSetting(pluginSettings, SlackNotifierProp.ENABLED);
