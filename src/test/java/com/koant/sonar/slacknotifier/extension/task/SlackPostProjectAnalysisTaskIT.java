@@ -259,47 +259,6 @@ public class SlackPostProjectAnalysisTaskIT {
 
         Mockito.verify(slackClient, times(1)).send(eq(hook), any(Payload.class));
 
-        // Payload(text=Project [Foobar] analyzed. See http://your.sonar.com/overview?id=com.koant.sonar.slack:sonar-slack-notifier-plugin. Quality gate status is OK,
-        // channel=#random, username=user, iconUrl=null, iconEmoji=null,
-        // attachments=[
-        //  Attachment(fallback=null, color=null, pretext=null, authorName=null, authorLink=null, authorIcon=null, title=null, titleLink=null, text=null,
-        //      fields=[Field(title=metric_key_1: OK, value=Value [0], operator [EQUALS], warning threshold [-1], error threshold [1], on leak period [false], valueShortEnough=false),
-        // Field(title=metric_key_2: ERROR, value=Value [101], operator [GREATER_THAN], warning threshold [50], error threshold [100], on leak period [false], valueShortEnough=false)],
-        // imageUrl=null, thumbUrl=null, footer=null, footerIcon=null, ts=null, mrkdwnIn=null)])
-        List<Attachment> attachments = new ArrayList<>();
-        List<Field> fields = new ArrayList<>();
-        fields.add(Field.builder()
-            .title("metric_key_1: OK")
-            .value("Value [0], operator [EQUALS], warning threshold [-1], error threshold [1], on leak period [false]")
-            .valueShortEnough(false)
-            .build());
-        fields.add(Field.builder()
-            .title("metric_key_2: ERROR")
-            .value("Value [101], operator [GREATER_THAN], warning threshold [50], error threshold [100], on leak period [false]")
-            .valueShortEnough(false)
-            .build());
-        fields.add(Field.builder()
-            .title("metric_key_3")
-            .value("NO_VALUE")
-            .valueShortEnough(true)
-            .build());
-        attachments.add(Attachment.builder()
-            .fields(fields)
-            .build());
-        Payload payload = Payload.builder()
-            .text("Project [Foobar] analyzed. See http://your.sonar.com/overview?id=com.koant.sonar.slack:sonar-slack-notifier-plugin. Quality gate status is OK")
-            .channel("#random")
-            .username("user")
-            .attachments(attachments)
-            .build();
-        Mockito.verify(slackClient, times(1)).send(eq(hook), eq(payload));
-
-        /*
-        String actual = EntityUtils.toString(actualRequest.getEntity());
-        String expected = "payload={\"channel\":\"#random\",\"username\":\"user\",\"text\":\"Project [Foobar] analyzed. See http://your.sonar.com/overview?id=com.koant.sonar.slack:sonar-slack-notifier-plugin. Quality gate status is OK\",\"attachments\":[{\"text\":\"- metric_key_1 OK Value [0], operator [EQUALS], warning threshold [-1], error threshold [1], on leak period [false]\\n- metric_key_2 ERROR Value [101], operator [GREATER_THAN], warning threshold [50], error threshold [100], on leak period [false]\\n\",\"fallback\": \"Reasons: metric_key_1 OK Value [0], operator [EQUALS], warning threshold [-1], error threshold [1], on leak period [false], metric_key_2 ERROR Value [101], operator [GREATER_THAN], warning threshold [50], error threshold [100], on leak period [false], \"}]}";
-        assertEquals(expected, URLDecoder.decode(actual,"UTF-8"));
-        */
-
     }
 
 }

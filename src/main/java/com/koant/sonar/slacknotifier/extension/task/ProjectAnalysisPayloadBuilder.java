@@ -6,6 +6,7 @@ import com.github.seratch.jslack.api.webhook.Payload;
 import org.sonar.api.ce.posttask.PostProjectAnalysisTask;
 import org.sonar.api.ce.posttask.QualityGate;
 import org.sonar.api.i18n.I18n;
+import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
 
@@ -86,17 +87,55 @@ public class ProjectAnalysisPayloadBuilder {
                 .build();
         } else {
             StringBuilder sb = new StringBuilder();
-            sb.append("Value [").append(condition.getValue()).append("], ");
-            sb.append("operator [").append(condition.getOperator()).append("], ");
-            sb.append("warning threshold [").append(condition.getWarningThreshold()).append("], ");
-            sb.append("error threshold [").append(condition.getErrorThreshold()).append("], ");
-            sb.append("on leak period [").append(condition.isOnLeakPeriod()).append(']');
-
+            if ("" .equals(condition.getValue())) {
+                sb.append("-");
+            } else{
+                sb.append(condition.getValue());
+            }
+            getValuePostfix(condition, sb);
+            if(condition.getWarningThreshold()!=null){
+                sb.append(", warning if ");
+                getValueOperatorPrefix(condition, sb);
+                sb.append(condition.getWarningThreshold());
+                getValuePostfix(condition, sb);
+            }
+            if(condition.getErrorThreshold()!=null){
+                sb.append(", error if ");
+                getValueOperatorPrefix(condition, sb);
+                sb.append(condition.getErrorThreshold());
+                getValuePostfix(condition, sb);
+            }
             return Field.builder().title(conditionName + ": " + condition.getStatus().name())
                 .value(sb.toString())
                 .valueShortEnough(false)
                 .build();
 
+        }
+    }
+
+    private void getValueOperatorPrefix(QualityGate.Condition condition, StringBuilder sb) {
+        switch(condition.getOperator()){
+            case EQUALS:
+                sb.append("==");
+                break;
+            case NOT_EQUALS:
+                sb.append("!=");
+                break;
+            case GREATER_THAN:
+                sb.append(">");
+                break;
+            case LESS_THAN:
+                sb.append("<");
+                break;
+        }
+    }
+
+    private void getValuePostfix(QualityGate.Condition condition, StringBuilder sb) {
+        switch(condition.getMetricKey()){
+            case CoreMetrics.NEW_COVERAGE_KEY:
+            case CoreMetrics.NEW_SQALE_DEBT_RATIO_KEY:
+                sb.append("%");
+                break;
         }
     }
 

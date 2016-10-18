@@ -120,6 +120,7 @@ public class ProjectAnalysisPayloadBuilderTest {
                         newConditionBuilder()
                             .setMetricKey(CoreMetrics.NEW_SQALE_DEBT_RATIO_KEY)
                             .setOperator(QualityGate.Operator.GREATER_THAN)
+                            .setWarningThreshold("2.0")
                             .setErrorThreshold("10.0")
                             .setOnLeakPeriod(true)
                             .build(QualityGate.EvaluationStatus.OK, "0.0"))
@@ -158,22 +159,22 @@ public class ProjectAnalysisPayloadBuilderTest {
         // Field(title=new_coverage: ERROR, value=Value [75.5], operator [LESS_THAN], warning threshold [null], error threshold [80.0], on leak period [true], valueShortEnough=false)], imageUrl=null, thumbUrl=null, footer=null, footerIcon=null, ts=null, mrkdwnIn=null)])
         fields.add(Field.builder()
             .title("New Vulnerabilities: OK")
-            .value("Value [0], operator [GREATER_THAN], warning threshold [null], error threshold [0], on leak period [true]")
+            .value("0, error if >0")
             .valueShortEnough(false)
             .build());
         fields.add(Field.builder()
             .title("New Bugs: ERROR")
-            .value("Value [1], operator [GREATER_THAN], warning threshold [null], error threshold [0], on leak period [true]")
+            .value("1, error if >0")
             .valueShortEnough(false)
             .build());
         fields.add(Field.builder()
             .title("Technical Debt Ratio on New Code: OK")
-            .value("Value [0.0], operator [GREATER_THAN], warning threshold [null], error threshold [10.0], on leak period [true]")
+            .value("0.0%, warning if >2.0%, error if >10.0%")
             .valueShortEnough(false)
             .build());
         fields.add(Field.builder()
             .title("Coverage on New Code: ERROR")
-            .value("Value [75.5], operator [LESS_THAN], warning threshold [null], error threshold [80.0], on leak period [true]")
+            .value("75.5%, error if <80.0%")
             .valueShortEnough(false)
             .build());
 
