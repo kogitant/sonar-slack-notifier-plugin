@@ -13,8 +13,8 @@ import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.*;
 
 public class SlackNotifierPlugin implements Plugin {
 
-    private final static String CATEGORY = "Slack";
-    private final static String SUBCATEGORY = "CKS Slack Notifier";
+    private static final String CATEGORY = "Slack";
+    private static final String SUBCATEGORY = "CKS Slack Notifier";
 
     @Override
     public void define(Context context) {
@@ -59,22 +59,28 @@ public class SlackNotifierPlugin implements Plugin {
 
 
         extensions.add(
-            PropertyDefinition.builder(CHANNELS.property())
-                .name("Project specific slack channels")
-                .description("Specify here the project specific slack channels. If a slack channel is not configured for a project, no slack message will be sent for project.")
+            PropertyDefinition.builder(CONFIG.property())
+                .name("Project specific configuration")
+                .description("Project specific configuration: Specify Slack channel and notification only on failing Qualilty Gate. " +
+                        "If a slack channel is not configured for a project, no slack message will be sent for project.")
                 .category(CATEGORY)
                 .subCategory(SUBCATEGORY)
                 .index(3)
                 .fields(
                     PropertyFieldDefinition.build(PROJECT.property())
                         .name("Project Key")
-                        .description("Ex: com.koant.sonar.slack:sonar-slack-notifier-plugin")
+                        .description("Ex: com.koant.sonar.slack:sonar-slack-notifier-plugin, can use '*' wildcard at the end")
                         .type(PropertyType.STRING)
                         .build(),
                     PropertyFieldDefinition.build(CHANNEL.property())
                         .name("Slack channel")
                         .description("Channel to send project specific messages to")
                         .type(PropertyType.STRING)
+                        .build(),
+                        PropertyFieldDefinition.build(QG_FAIL_ONLY.property())
+                        .name("Send on failed Quality Gate")
+                        .description("Should notification be sent only if Quality Gate did not pass OK")
+                        .type(PropertyType.BOOLEAN)
                         .build()
                 )
                 .build());
