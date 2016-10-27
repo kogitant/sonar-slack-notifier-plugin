@@ -36,15 +36,19 @@ public enum SlackNotifierProp {
      *
      * @see SlackNotifierPlugin#define(org.sonar.api.Plugin.Context)
      */
-    CHANNELS("ckss.projectchannels"),
+    CONFIG("ckss.projectconfig"),
     /**
-     * @see SlackNotifierProp#CHANNELS
+     * @see SlackNotifierProp#CONFIG
      */
     PROJECT("project"),
     /**
-     * @see SlackNotifierProp#CHANNELS
+     * @see SlackNotifierProp#CONFIG
      */
-    CHANNEL("channel");
+    CHANNEL("channel"),
+    /**
+     * @see SlackNotifierProp#CONFIG
+     */
+    QG_FAIL_ONLY("qg");
 
     private String property;
 

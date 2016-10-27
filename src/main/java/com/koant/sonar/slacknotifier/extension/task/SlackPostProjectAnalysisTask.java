@@ -4,6 +4,7 @@ import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.webhook.Payload;
 import com.github.seratch.jslack.api.webhook.WebhookResponse;
 import com.koant.sonar.slacknotifier.common.component.AbstractSlackNotifyingComponent;
+import com.koant.sonar.slacknotifier.common.component.ProjectConfig;
 import org.sonar.api.ce.posttask.PostProjectAnalysisTask;
 import org.sonar.api.config.Settings;
 import org.sonar.api.i18n.I18n;
@@ -11,16 +12,17 @@ import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
 
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * Created by 616286 on 3.6.2016.
+ * Modified by poznachowski
  */
 public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponent implements PostProjectAnalysisTask {
 
     private static final Logger LOG = Loggers.get(SlackPostProjectAnalysisTask.class);
 
     private final I18n i18n;
-    private final Settings settings;
     private final Slack slackClient;
 
     public SlackPostProjectAnalysisTask(Settings settings, I18n i18n) {
@@ -30,26 +32,37 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
     public SlackPostProjectAnalysisTask(Slack slackClient, Settings settings, I18n i18n) {
         super(settings);
         this.slackClient = slackClient;
-        this.settings = settings;
         this.i18n = i18n;
     }
 
     @Override
     public void finished(ProjectAnalysis analysis) {
         refreshSettings();
-
-        LOG.info("analysis.getScannerContext().getProperties()=[{}}", analysis.getScannerContext().getProperties());
-        String projectKey = analysis.getProject().getKey();
-        if (!taskEnabled(projectKey)) {
+        if (!isPluginEnabled()) {
+            LOG.info("Slack notifier plugin disabled, skipping. Settings are [{}]", logRelevantSettings());
             return;
         }
+        LOG.info("Analysis ScannerContext: [{}]", analysis.getScannerContext().getProperties());
+        String projectKey = analysis.getProject().getKey();
+
+        Optional<ProjectConfig> projectConfigOptional = getProjectConfig(projectKey);
+        if (!projectConfigOptional.isPresent()) {
+            return;
+        }
+
+        ProjectConfig projectConfig = projectConfigOptional.get();
+        if (shouldSkipSendingNotification(projectConfig, analysis.getQualityGate())) {
+            return;
+        }
+
         LOG.info("Slack notification will be sent: " + analysis.toString());
 
-        Payload payload = new ProjectAnalysisPayloadBuilder(i18n, analysis)
-            .projectUrl(projectUrl(projectKey))
-            .channel(getSlackChannel(projectKey))
-            .username(getSlackUser())
-            .build();
+        Payload payload = ProjectAnalysisPayloadBuilder.of(analysis)
+                .i18n(i18n)
+                .projectConfig(projectConfig)
+                .projectUrl(projectUrl(projectKey))
+                .username(getSlackUser())
+                .build();
 
         try {
             // See https://github.com/seratch/jslack
@@ -65,7 +78,6 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
     private String projectUrl(String projectKey) {
         return getSonarServerUrl() + "overview?id=" + projectKey;
     }
-
 
 
 }
