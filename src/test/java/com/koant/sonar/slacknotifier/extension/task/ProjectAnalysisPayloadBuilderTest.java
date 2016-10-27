@@ -76,12 +76,12 @@ public class ProjectAnalysisPayloadBuilderTest {
                 .build());
         fields.add(Field.builder()
                 .title("Technical Debt Ratio on New Code: OK")
-                .value("0.0%, warning if >2.0%, error if >10.0%")
+                .value("0%, warning if >2.0%, error if >10.0%")
                 .valueShortEnough(false)
                 .build());
         fields.add(Field.builder()
                 .title("Coverage on New Code: ERROR")
-                .value("75.5%, error if <80.0%")
+                .value("75.51%, error if <80.0%")
                 .valueShortEnough(false)
                 .build());
 

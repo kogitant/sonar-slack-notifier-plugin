@@ -99,13 +99,13 @@ public class Analyses {
                                         .setWarningThreshold("2.0")
                                         .setErrorThreshold("10.0")
                                         .setOnLeakPeriod(true)
-                                        .build(QualityGate.EvaluationStatus.OK, "0.0"))
+                                        .build(QualityGate.EvaluationStatus.OK, "0.0000000001"))
                                 .add(newConditionBuilder()
                                         .setMetricKey(CoreMetrics.NEW_COVERAGE_KEY)
                                         .setOperator(QualityGate.Operator.LESS_THAN)
                                         .setErrorThreshold("80.0")
                                         .setOnLeakPeriod(true)
-                                        .build(QualityGate.EvaluationStatus.ERROR, "75.5"))
+                                        .build(QualityGate.EvaluationStatus.ERROR, "75.509999999999"))
                                 .build())
                 .execute();
     }

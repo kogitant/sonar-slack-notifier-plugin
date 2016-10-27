@@ -7,8 +7,10 @@ import com.koant.sonar.slacknotifier.common.component.ProjectConfig;
 import org.sonar.api.ce.posttask.PostProjectAnalysisTask;
 import org.sonar.api.ce.posttask.QualityGate;
 import org.sonar.api.i18n.I18n;
+import org.sonar.api.internal.apachecommons.lang.math.NumberUtils;
 import org.sonar.api.measures.CoreMetrics;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -18,6 +20,8 @@ import java.util.stream.Collectors;
  */
 
 public class ProjectAnalysisPayloadBuilder {
+
+    DecimalFormat percentageFormat = new DecimalFormat();
 
     private static final String SLACK_GOOD_COLOUR = "good";
     private static final String SLACK_WARNING_COLOUR = "warning";
@@ -129,23 +133,19 @@ public class ProjectAnalysisPayloadBuilder {
                     .build();
         } else {
             StringBuilder sb = new StringBuilder();
-            if ("".equals(condition.getValue())) {
-                sb.append("-");
-            } else {
-                sb.append(condition.getValue());
-            }
-            getValuePostfix(condition, sb);
+            appendValue(condition, sb);
+            appendValuePostfix(condition, sb);
             if (condition.getWarningThreshold() != null) {
                 sb.append(", warning if ");
-                getValueOperatorPrefix(condition, sb);
+                appendValueOperatorPrefix(condition, sb);
                 sb.append(condition.getWarningThreshold());
-                getValuePostfix(condition, sb);
+                appendValuePostfix(condition, sb);
             }
             if (condition.getErrorThreshold() != null) {
                 sb.append(", error if ");
-                getValueOperatorPrefix(condition, sb);
+                appendValueOperatorPrefix(condition, sb);
                 sb.append(condition.getErrorThreshold());
-                getValuePostfix(condition, sb);
+                appendValuePostfix(condition, sb);
             }
             return Field.builder().title(conditionName + ": " + condition.getStatus().name())
                     .value(sb.toString())
@@ -155,7 +155,28 @@ public class ProjectAnalysisPayloadBuilder {
         }
     }
 
-    private void getValueOperatorPrefix(QualityGate.Condition condition, StringBuilder sb) {
+    private void appendValue(QualityGate.Condition condition, StringBuilder sb) {
+        if ("".equals(condition.getValue())) {
+            sb.append("-");
+        } else {
+            if (valueIsPercentage(condition)){
+                appendPercentageValue(condition.getValue(), sb);
+            }else {
+                sb.append(condition.getValue());
+            }
+        }
+    }
+
+    private void appendPercentageValue(String s, StringBuilder sb) {
+        try {
+            Double d = NumberUtils.toDouble(s);
+            sb.append(percentageFormat.format(d));
+        }catch(Exception e){
+            sb.append(s);
+        }
+    }
+
+    private void appendValueOperatorPrefix(QualityGate.Condition condition, StringBuilder sb) {
         switch (condition.getOperator()) {
             case EQUALS:
                 sb.append("==");
@@ -172,13 +193,19 @@ public class ProjectAnalysisPayloadBuilder {
         }
     }
 
-    private void getValuePostfix(QualityGate.Condition condition, StringBuilder sb) {
+    private void appendValuePostfix(QualityGate.Condition condition, StringBuilder sb) {
+        if(valueIsPercentage(condition)){
+            sb.append("%");
+        }
+    }
+
+    private boolean valueIsPercentage(QualityGate.Condition condition){
         switch (condition.getMetricKey()) {
             case CoreMetrics.NEW_COVERAGE_KEY:
             case CoreMetrics.NEW_SQALE_DEBT_RATIO_KEY:
-                sb.append("%");
-                break;
+                return true;
         }
+        return false;
     }
 
 
