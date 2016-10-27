@@ -35,14 +35,18 @@ In the above example there is a Project Key to Slack Channel configuration for a
 The project key of any SonarQube project can be found in the project page (bottom right corner):
 ![](documentation/screenshots/project_key_from_project_page.png?raw=true)
 
-Once everything is configured, run an analysis of your project:
-```
-    $ mvn clean install
-    $ mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.1.1:sonar -Dsonar.host.url=http://localhost:9000
-```
+## Wildcard support
+The project key supports wildcards at the end. See https://github.com/kogitant/sonar-slack-notifier-plugin/issues/2
 
-The result should be something that looks like this in Slack:
-![](documentation/screenshots/example_slack_message.png)
+## Only send notification when Quality Gate fails
+Notifications can be sent for all Quality Gate statuses, or just for WARNING/ERROR statuses. See https://github.com/kogitant/sonar-slack-notifier-plugin/issues/1 
+ 
+# Example messages posted to Slack
+## New bug introduced
+![](documentation/screenshots/example_slack_message_red_due_to_new_bug.png)
+
+## All good
+![](documentation/screenshots/example_slack_message_all_green.png)
 
 # Works with
 * Tested with SonarQube 6.1 against Slack on 2016.10.17
