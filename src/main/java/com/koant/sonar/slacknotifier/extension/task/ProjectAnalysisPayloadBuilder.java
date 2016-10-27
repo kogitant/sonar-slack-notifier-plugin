@@ -7,7 +7,6 @@ import com.koant.sonar.slacknotifier.common.component.ProjectConfig;
 import org.sonar.api.ce.posttask.PostProjectAnalysisTask;
 import org.sonar.api.ce.posttask.QualityGate;
 import org.sonar.api.i18n.I18n;
-import org.sonar.api.internal.apachecommons.lang.math.NumberUtils;
 import org.sonar.api.measures.CoreMetrics;
 
 import java.text.DecimalFormat;
@@ -169,7 +168,7 @@ public class ProjectAnalysisPayloadBuilder {
 
     private void appendPercentageValue(String s, StringBuilder sb) {
         try {
-            Double d = NumberUtils.toDouble(s);
+            Double d = Double.parseDouble(s);
             sb.append(percentageFormat.format(d));
         }catch(Exception e){
             sb.append(s);
