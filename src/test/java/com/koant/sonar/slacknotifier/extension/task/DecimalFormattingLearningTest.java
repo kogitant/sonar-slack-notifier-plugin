@@ -32,5 +32,18 @@ public class DecimalFormattingLearningTest {
     }
 
 
+    @Test
+    public void howIsStringWithDotAsDecimalSeparatorTreated_case3(){
+        DecimalFormat percentageFormat = new DecimalFormat();
+        percentageFormat.setMaximumFractionDigits(2);
+
+        Double d = Double.parseDouble("86.6666666");
+        String actual = percentageFormat.format(d);
+        String expected = "86.67";
+        assertThat(actual).isEqualTo(expected);
+
+    }
+
+
 
 }

@@ -20,8 +20,6 @@ import java.util.stream.Collectors;
 
 public class ProjectAnalysisPayloadBuilder {
 
-    DecimalFormat percentageFormat = new DecimalFormat();
-
     private static final String SLACK_GOOD_COLOUR = "good";
     private static final String SLACK_WARNING_COLOUR = "warning";
     private static final String SLACK_DANGER_COLOUR = "danger";
@@ -39,8 +37,13 @@ public class ProjectAnalysisPayloadBuilder {
     private String slackUser;
     private String projectUrl;
 
+    private DecimalFormat percentageFormat;
+
     private ProjectAnalysisPayloadBuilder(PostProjectAnalysisTask.ProjectAnalysis analysis) {
         this.analysis = analysis;
+        // Format percentages as 25.01 instead of 25.0066666666666667 etc.
+        this.percentageFormat = new DecimalFormat();
+        this.percentageFormat.setMaximumFractionDigits(2);
     }
 
     public static ProjectAnalysisPayloadBuilder of(PostProjectAnalysisTask.ProjectAnalysis analysis) {
