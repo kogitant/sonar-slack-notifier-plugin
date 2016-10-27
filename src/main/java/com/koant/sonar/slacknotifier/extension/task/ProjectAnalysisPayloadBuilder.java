@@ -12,6 +12,7 @@ import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
 
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -176,7 +177,7 @@ public class ProjectAnalysisPayloadBuilder {
         try {
             Double d = Double.parseDouble(s);
             sb.append(percentageFormat.format(d));
-        }catch(Exception e){
+        }catch(NumberFormatException e){
             LOG.error("Failed to parse [{}] into a Double due to [{}]", s, e.getMessage());
             sb.append(s);
         }
