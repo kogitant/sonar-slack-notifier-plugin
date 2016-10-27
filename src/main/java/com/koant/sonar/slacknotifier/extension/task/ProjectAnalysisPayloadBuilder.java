@@ -8,6 +8,8 @@ import org.sonar.api.ce.posttask.PostProjectAnalysisTask;
 import org.sonar.api.ce.posttask.QualityGate;
 import org.sonar.api.i18n.I18n;
 import org.sonar.api.measures.CoreMetrics;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
  */
 
 public class ProjectAnalysisPayloadBuilder {
+    private static final Logger LOG = Loggers.get(ProjectAnalysisPayloadBuilder.class);
 
     private static final String SLACK_GOOD_COLOUR = "good";
     private static final String SLACK_WARNING_COLOUR = "warning";
@@ -174,6 +177,7 @@ public class ProjectAnalysisPayloadBuilder {
             Double d = Double.parseDouble(s);
             sb.append(percentageFormat.format(d));
         }catch(Exception e){
+            LOG.error("Failed to parse [{}] into a Double due to [{}]", s, e.getMessage());
             sb.append(s);
         }
     }
