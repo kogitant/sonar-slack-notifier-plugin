@@ -50,6 +50,7 @@ Notifications can be sent for all Quality Gate statuses, or just for WARNING/ERR
 
 # Works with
 * Tested with SonarQube 6.1 against Slack on 2016.10.17
+* Tested with SonarQube 6.1 against Mattermost 3.5.0 on 2017.01.02
 
 # Inspired by
 * https://github.com/astrebel/sonar-slack-notifier-plugin
