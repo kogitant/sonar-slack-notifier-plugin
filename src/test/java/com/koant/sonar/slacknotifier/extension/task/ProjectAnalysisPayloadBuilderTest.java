@@ -1,9 +1,12 @@
 package com.koant.sonar.slacknotifier.extension.task;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.github.seratch.jslack.api.model.Attachment;
 import com.github.seratch.jslack.api.model.Field;
 import com.github.seratch.jslack.api.webhook.Payload;
 import com.koant.sonar.slacknotifier.common.component.ProjectConfig;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -14,8 +17,6 @@ import org.sonar.core.platform.PluginRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Created by ak on 18/10/16.
@@ -55,7 +56,7 @@ public class ProjectAnalysisPayloadBuilderTest {
         Payload payload = ProjectAnalysisPayloadBuilder.of(postProjectAnalysisTask.getProjectAnalysis())
                 .projectConfig(projectConfig)
                 .i18n(i18n)
-                .projectUrl("http://localhist:9000/overview?id=project:key")
+                .projectUrl("http://localhist:9000/dashboard?id=project:key")
                 .username("CKSSlackNotifier")
                 .build();
         assertThat(payload).isEqualTo(expected());
@@ -90,7 +91,8 @@ public class ProjectAnalysisPayloadBuilderTest {
                 .color("good")
                 .build());
         return Payload.builder()
-                .text("Project [Project Name] analyzed. See http://localhist:9000/overview?id=project:key. Quality gate status: OK")
+                .text("Project [Project Name] analyzed. See "
+                    + "http://localhist:9000/dashboard?id=project:key. Quality gate status: OK")
                 .channel("#channel")
                 .username("CKSSlackNotifier")
                 .attachments(attachments)
@@ -104,7 +106,7 @@ public class ProjectAnalysisPayloadBuilderTest {
         Payload payload = ProjectAnalysisPayloadBuilder.of(postProjectAnalysisTask.getProjectAnalysis())
                 .projectConfig(projectConfig)
                 .i18n(i18n)
-                .projectUrl("http://localhist:9000/overview?id=project:key")
+                .projectUrl("http://localhist:9000/dashboard?id=project:key")
                 .username("CKSSlackNotifier")
                 .build();
 
@@ -123,7 +125,7 @@ public class ProjectAnalysisPayloadBuilderTest {
         Payload payload = ProjectAnalysisPayloadBuilder.of(postProjectAnalysisTask.getProjectAnalysis())
                 .projectConfig(projectConfig)
                 .i18n(i18n)
-                .projectUrl("http://localhist:9000/overview?id=project:key")
+                .projectUrl("http://localhist:9000/dashboard?id=project:key")
                 .username("CKSSlackNotifier")
                 .build();
 
