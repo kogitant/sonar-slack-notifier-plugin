@@ -7,6 +7,7 @@ import com.github.seratch.jslack.api.model.Field;
 import com.github.seratch.jslack.api.webhook.Payload;
 import com.koant.sonar.slacknotifier.common.component.ProjectConfig;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -26,6 +27,8 @@ public class ProjectAnalysisPayloadBuilderTest {
     private static final boolean QG_FAIL_ONLY = true;
     CaptorPostProjectAnalysisTask postProjectAnalysisTask;
     DefaultI18n i18n;
+    
+    Locale defaultLocale;
 
     @Before
     public void before() {
@@ -36,6 +39,15 @@ public class ProjectAnalysisPayloadBuilderTest {
         System2 system2 = Mockito.mock(System2.class);
         i18n = new DefaultI18n(pluginRepository, system2);
         i18n.start();
+
+        defaultLocale = Locale.getDefault();
+        Locale.setDefault(Locale.US);
+    }
+    
+    @After
+    public void after(){
+        Locale.setDefault(defaultLocale);
+        
     }
 
     @Test
