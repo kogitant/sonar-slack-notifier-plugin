@@ -22,6 +22,14 @@
     <sonar.version>6.1</sonar.version>
   </properties>
 
+  <scm>
+    <connection>scm:git:git@github.com:kogitant/sonar-slack-notifier-plugin.git</connection>
+    <url>scm:git:git@github.com:kogitant/sonar-slack-notifier-plugin.git</url>
+    <developerConnection>scm:git:git@github.com:kogitant/sonar-slack-notifier-plugin.git</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
+  
+
   <dependencies>
     <!-- Dependencies provided by SonarQube server -->
     <!-- https://mvnrepository.com/artifact/org.sonarsource.sonarqube/sonar-plugin-api -->
