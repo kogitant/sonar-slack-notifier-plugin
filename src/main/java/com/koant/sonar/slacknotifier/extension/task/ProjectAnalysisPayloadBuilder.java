@@ -3,18 +3,21 @@ package com.koant.sonar.slacknotifier.extension.task;
 import com.github.seratch.jslack.api.model.Attachment;
 import com.github.seratch.jslack.api.model.Field;
 import com.github.seratch.jslack.api.webhook.Payload;
+import com.github.seratch.jslack.api.webhook.Payload.PayloadBuilder;
 import com.koant.sonar.slacknotifier.common.component.ProjectConfig;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.sonar.api.ce.posttask.PostProjectAnalysisTask;
 import org.sonar.api.ce.posttask.QualityGate;
 import org.sonar.api.i18n.I18n;
 import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
-
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Created by ak on 18/10/16.
@@ -38,6 +41,7 @@ public class ProjectAnalysisPayloadBuilder {
     I18n i18n;
     PostProjectAnalysisTask.ProjectAnalysis analysis;
     private ProjectConfig projectConfig;
+    private String iconUrl;
     private String slackUser;
     private String projectUrl;
 
@@ -74,6 +78,11 @@ public class ProjectAnalysisPayloadBuilder {
         return this;
     }
 
+    public ProjectAnalysisPayloadBuilder iconUrl(String iconUrl) {
+        this.iconUrl = iconUrl;
+        return this;
+    }
+
     public Payload build() {
         assertNotNull(projectConfig, "projectConfig");
         assertNotNull(projectUrl, "projectUrl");
@@ -87,12 +96,17 @@ public class ProjectAnalysisPayloadBuilder {
                 projectUrl,
                 qualityGate == null ? "." : ". Quality gate status: " + qualityGate.getStatus());
 
-        return Payload.builder()
+        PayloadBuilder builder = Payload.builder()
                 .channel(projectConfig.getSlackChannel())
                 .username(slackUser)
                 .text(shortText)
-                .attachments(qualityGate == null ? null : buildConditionsAttachment(qualityGate, projectConfig.isQgFailOnly()))
-                .build();
+                .attachments(qualityGate == null ? null : buildConditionsAttachment(qualityGate, projectConfig.isQgFailOnly()));
+
+        if (iconUrl != null) {
+            builder.iconUrl(iconUrl);
+        }
+
+        return builder.build();
     }
 
     private void assertNotNull(Object object, String argumentName) {
