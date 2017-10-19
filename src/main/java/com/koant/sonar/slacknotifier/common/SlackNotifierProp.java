@@ -13,6 +13,10 @@ public enum SlackNotifierProp {
      */
     USER("ckss.user"),
     /**
+     * Appear in Slack channels with this icon
+     */
+    ICON_URL("ckss.icon"),
+    /**
      * Is this plugin enabled in general?
      * Per project slack notification sending depends on this and a project specific slack channel configuration existing.
      */

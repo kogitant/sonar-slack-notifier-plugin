@@ -40,12 +40,20 @@ public class SlackNotifierPlugin implements Plugin {
             .build());
         extensions.add(PropertyDefinition.builder(USER.property())
             .name("Slack user alias")
-            .description("Messages from this plugin appear woth given username")
+            .description("Messages from this plugin appear with given username")
             .defaultValue("SonarQube Slack Notifier Plugin")
             .type(PropertyType.STRING)
             .category(CATEGORY)
             .subCategory(SUBCATEGORY)
             .index(1)
+            .build());
+        extensions.add(PropertyDefinition.builder(ICON_URL.property())
+            .name("Slack icon Url")
+            .description("Messages from this plugin appear with given icon")
+            .type(PropertyType.STRING)
+            .category(CATEGORY)
+            .subCategory(SUBCATEGORY)
+            .index(2)
             .build());
         extensions.add(PropertyDefinition.builder(ENABLED.property())
             .name("Plugin enabled")
@@ -54,7 +62,7 @@ public class SlackNotifierPlugin implements Plugin {
             .type(PropertyType.BOOLEAN)
             .category(CATEGORY)
             .subCategory(SUBCATEGORY)
-            .index(2)
+            .index(3)
             .build());
 
 

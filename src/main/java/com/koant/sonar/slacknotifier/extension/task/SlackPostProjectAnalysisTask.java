@@ -62,6 +62,7 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
                 .projectConfig(projectConfig)
                 .projectUrl(projectUrl(projectKey))
                 .username(getSlackUser())
+                .iconUrl(getIconUrl())
                 .build();
 
         try {

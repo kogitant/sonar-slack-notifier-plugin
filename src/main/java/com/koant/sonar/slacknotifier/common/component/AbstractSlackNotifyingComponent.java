@@ -60,6 +60,10 @@ public abstract class AbstractSlackNotifyingComponent {
         return settings.getString(SlackNotifierProp.USER.property());
     }
 
+    protected String getIconUrl() {
+        return settings.getString(SlackNotifierProp.ICON_URL.property());
+    }
+
     protected boolean isPluginEnabled() {
         return settings.getBoolean(SlackNotifierProp.ENABLED.property());
     }
