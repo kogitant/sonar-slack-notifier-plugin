@@ -69,7 +69,7 @@ public class SlackNotifierPlugin implements Plugin {
                 .fields(
                     PropertyFieldDefinition.build(PROJECT.property())
                         .name("Project Key")
-                        .description("Ex: com.koant.sonar.slack:sonar-slack-notifier-plugin, can use '*' wildcard at the end")
+                        .description("Regex that will match the Project Key of the project. Ex: com\\..* will match all projects that start with 'com.'")
                         .type(PropertyType.STRING)
                         .build(),
                     PropertyFieldDefinition.build(CHANNEL.property())
