@@ -17,6 +17,13 @@ public enum SlackNotifierProp {
      * Per project slack notification sending depends on this and a project specific slack channel configuration existing.
      */
     ENABLED("ckss.enabled"),
+    
+    /**
+     * Proxy settings (IP, port, protocol)
+     */
+    PROXY_IP("ckss.proxy_ip"),
+    PROXY_PORT("ckss.proxy_port"),
+    PROXY_PROTOCOL("ckss.proxy_protocol"),
 
     /**
      * <p>

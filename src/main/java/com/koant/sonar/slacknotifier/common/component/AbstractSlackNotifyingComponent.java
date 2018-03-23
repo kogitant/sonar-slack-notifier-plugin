@@ -1,6 +1,7 @@
 package com.koant.sonar.slacknotifier.common.component;
 
 import com.koant.sonar.slacknotifier.common.SlackNotifierProp;
+import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.CONFIG;
 import org.sonar.api.ce.posttask.QualityGate;
 import org.sonar.api.config.Settings;
 import org.sonar.api.utils.MessageException;
@@ -63,6 +64,18 @@ public abstract class AbstractSlackNotifyingComponent {
     protected boolean isPluginEnabled() {
         return settings.getBoolean(SlackNotifierProp.ENABLED.property());
     }
+    
+    protected String getProxyIP() {
+        return settings.getString(SlackNotifierProp.PROXY_IP.property());
+    }
+    
+    protected int getProxyPort() {
+        return settings.getInt(SlackNotifierProp.PROXY_PORT.property());
+    }
+    
+    protected String getProxyProtocol() {
+        return settings.getString(SlackNotifierProp.PROXY_PROTOCOL.property());
+    }
 
     /**
      * Returns the sonar server url, with a trailing /
@@ -121,6 +134,9 @@ public abstract class AbstractSlackNotifyingComponent {
         Map<String, String> pluginSettings = new HashMap<>();
         mapSetting(pluginSettings, SlackNotifierProp.HOOK);
         mapSetting(pluginSettings, SlackNotifierProp.USER);
+        mapSetting(pluginSettings, SlackNotifierProp.PROXY_IP);
+        mapSetting(pluginSettings, SlackNotifierProp.PROXY_PORT);
+        mapSetting(pluginSettings, SlackNotifierProp.PROXY_PROTOCOL);
         mapSetting(pluginSettings, SlackNotifierProp.ENABLED);
         mapSetting(pluginSettings, SlackNotifierProp.CONFIG);
         return pluginSettings.toString() + "; project specific channel config: " + projectConfigMap;
