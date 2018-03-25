@@ -19,9 +19,24 @@ import java.util.Locale;
 
 import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.*;
 import static com.koant.sonar.slacknotifier.extension.task.Analyses.PROJECT_KEY;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponseFactory;
+import org.apache.http.HttpStatus;
+import org.apache.http.HttpVersion;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicStatusLine;
+import org.mockito.InjectMocks;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 
 /**
  * Created by 616286 on 3.6.2016.
@@ -32,11 +47,15 @@ public class SlackPostProjectAnalysisTaskTest {
     private static final String HOOK = "hook";
     private static final String DIFFERENT_KEY = "different:key";
 
-    CaptorPostProjectAnalysisTask postProjectAnalysisTask;
-    SlackPostProjectAnalysisTask task;
-    private Slack slackClient;
+    private CaptorPostProjectAnalysisTask postProjectAnalysisTask;
+    
+    private SlackPostProjectAnalysisTask task;
+    
+    private CloseableHttpClient httpClient;
+    
     private Settings settings;
-    I18n i18n;
+    private I18n i18n;
+    private HttpPost httpRequest;
 
     @Before
     public void before() throws IOException {
@@ -46,14 +65,23 @@ public class SlackPostProjectAnalysisTaskTest {
         settings.setProperty(SlackNotifierProp.HOOK.property(), HOOK);
         settings.setProperty(CHANNEL.property(), "channel");
         settings.setProperty(USER.property(), "user");
+        settings.setProperty(PROXY_IP.property(), "127.0.0.1");
+        settings.setProperty(PROXY_PORT.property(), "8080");
+        settings.setProperty(PROXY_PROTOCOL.property(), "http");
         settings.setProperty(CONFIG.property(), PROJECT_KEY);
         settings.setProperty(CONFIG.property() + "." + PROJECT_KEY + "." + PROJECT.property(), PROJECT_KEY);
         settings.setProperty(CONFIG.property() + "." + PROJECT_KEY + "." + CHANNEL.property(), "#random");
         settings.setProperty(CONFIG.property() + "." + PROJECT_KEY + "." + QG_FAIL_ONLY.property(), "false");
         settings.setProperty("sonar.core.serverBaseURL", "http://your.sonar.com/");
-        slackClient = Mockito.mock(Slack.class);
-        WebhookResponse webhookResponse = WebhookResponse.builder().code(200).build();
-        when(slackClient.send(anyString(), any(Payload.class))).thenReturn(webhookResponse);
+        httpClient = Mockito.mock(CloseableHttpClient.class);
+        CloseableHttpResponse httpResponse = Mockito.mock(CloseableHttpResponse.class);
+        HttpEntity entity = Mockito.mock(HttpEntity.class);
+        httpRequest = Mockito.mock(HttpPost.class);        
+        
+        when(httpResponse.getStatusLine()).thenReturn(new BasicStatusLine(HttpVersion.HTTP_1_1, HttpStatus.SC_OK, "FINE!"));
+        when(httpResponse.getEntity()).thenReturn(entity);        
+        when(httpClient.execute(any(HttpPost.class))).thenReturn(httpResponse);    
+        
         i18n = Mockito.mock(I18n.class);
         Mockito.when(i18n.message(Matchers.any(Locale.class), anyString(), anyString())).thenAnswer(new Answer<String>() {
             @Override
@@ -61,14 +89,15 @@ public class SlackPostProjectAnalysisTaskTest {
                 return (String) invocation.getArguments()[2];
             }
         });
-        task = new SlackPostProjectAnalysisTask(slackClient, settings, i18n);
+        
+        task = new SlackPostProjectAnalysisTask(httpClient, settings, i18n);
     }
 
     @Test
     public void shouldCall() throws Exception {
         Analyses.simple(postProjectAnalysisTask);
         task.finished(postProjectAnalysisTask.getProjectAnalysis());
-        Mockito.verify(slackClient, times(1)).send(eq(HOOK), any(Payload.class));
+        Mockito.verify(httpClient, times(1)).execute(any(HttpPost.class));
     }
 
     @Test
@@ -76,14 +105,14 @@ public class SlackPostProjectAnalysisTaskTest {
         settings.setProperty(ENABLED.property(), "false");
         Analyses.simple(postProjectAnalysisTask);
         task.finished(postProjectAnalysisTask.getProjectAnalysis());
-        Mockito.verifyZeroInteractions(slackClient);
+        Mockito.verifyZeroInteractions(httpClient);
     }
 
     @Test
     public void shouldSkipIfNoConfigFound() throws Exception {
         Analyses.simpleDifferentKey(postProjectAnalysisTask);
         task.finished(postProjectAnalysisTask.getProjectAnalysis());
-        Mockito.verifyZeroInteractions(slackClient);
+        Mockito.verifyZeroInteractions(httpClient);
     }
 
     @Test
@@ -91,6 +120,6 @@ public class SlackPostProjectAnalysisTaskTest {
         settings.setProperty(CONFIG.property() + "." + PROJECT_KEY + "." + QG_FAIL_ONLY.property(), "true");
         Analyses.simple(postProjectAnalysisTask);
         task.finished(postProjectAnalysisTask.getProjectAnalysis());
-        Mockito.verifyZeroInteractions(slackClient);
+        Mockito.verifyZeroInteractions(httpClient);
     }
 }
