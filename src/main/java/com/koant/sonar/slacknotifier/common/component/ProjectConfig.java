@@ -12,11 +12,13 @@ import java.util.Objects;
 public class ProjectConfig {
     private final String projectKey;
     private final String slackChannel;
+    private final String notify;
     private final boolean qgFailOnly;
 
-    public ProjectConfig(String projectKey, String slackChannel, boolean qgFailOnly) {
+    public ProjectConfig(String projectKey, String slackChannel, String notify, boolean qgFailOnly) {
         this.projectKey = projectKey;
         this.slackChannel = slackChannel;
+        this.notify = notify;
         this.qgFailOnly = qgFailOnly;
     }
 
@@ -29,14 +31,16 @@ public class ProjectConfig {
         this.projectKey = c.getProjectKey();
         this.slackChannel = c.getSlackChannel();
         this.qgFailOnly = c.isQgFailOnly();
+        this.notify = c.getNotify();
     }
 
     static ProjectConfig create(Settings settings, String configurationId) {
         String configurationPrefix = SlackNotifierProp.CONFIG.property() + "." + configurationId + ".";
         String projectKey = settings.getString(configurationPrefix + SlackNotifierProp.PROJECT.property());
         String slackChannel = settings.getString(configurationPrefix + SlackNotifierProp.CHANNEL.property());
+        String notify = settings.getString(configurationPrefix+SlackNotifierProp.NOTIFY.property());
         boolean qgFailOnly = settings.getBoolean(configurationPrefix + SlackNotifierProp.QG_FAIL_ONLY.property());
-        return new ProjectConfig(projectKey, slackChannel, qgFailOnly);
+        return new ProjectConfig(projectKey, slackChannel, notify, qgFailOnly);
     }
 
     public String getProjectKey() {
@@ -51,6 +55,8 @@ public class ProjectConfig {
         return qgFailOnly;
     }
 
+    public String getNotify() {return notify;}
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -58,6 +64,7 @@ public class ProjectConfig {
         ProjectConfig that = (ProjectConfig) o;
         return qgFailOnly == that.qgFailOnly &&
                 Objects.equals(projectKey, that.projectKey) &&
+                Objects.equals(notify, that.notify) &&
                 Objects.equals(slackChannel, that.slackChannel);
     }
 
@@ -71,6 +78,7 @@ public class ProjectConfig {
         final StringBuilder sb = new StringBuilder("ProjectConfig{");
         sb.append("projectKey='").append(projectKey).append('\'');
         sb.append(", slackChannel='").append(slackChannel).append('\'');
+        sb.append(", notify='").append(notify).append('\'');
         sb.append(", qgFailOnly=").append(qgFailOnly);
         sb.append('}');
         return sb.toString();

@@ -45,6 +45,12 @@ public enum SlackNotifierProp {
      * @see SlackNotifierProp#CONFIG
      */
     CHANNEL("channel"),
+
+    /**
+     * add @ to someone on notify message
+     */
+    NOTIFY("notify"),
+
     /**
      * @see SlackNotifierProp#CONFIG
      */

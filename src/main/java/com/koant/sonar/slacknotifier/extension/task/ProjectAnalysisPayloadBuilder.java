@@ -7,6 +7,7 @@ import com.koant.sonar.slacknotifier.common.component.ProjectConfig;
 import org.sonar.api.ce.posttask.PostProjectAnalysisTask;
 import org.sonar.api.ce.posttask.QualityGate;
 import org.sonar.api.i18n.I18n;
+import org.sonar.api.internal.apachecommons.lang.StringUtils;
 import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
@@ -81,8 +82,10 @@ public class ProjectAnalysisPayloadBuilder {
         assertNotNull(i18n, "i18n");
         assertNotNull(analysis, "analysis");
 
+        String notifyPrefix = StringUtils.isEmpty(projectConfig.getNotify())? "":"<!" + projectConfig.getNotify() +"> ";
+
         QualityGate qualityGate = analysis.getQualityGate();
-        String shortText = String.join("",
+        String shortText = String.join("", notifyPrefix,
                 "Project [", analysis.getProject().getName(), "] analyzed. See ",
                 projectUrl,
                 qualityGate == null ? "." : ". Quality gate status: " + qualityGate.getStatus());

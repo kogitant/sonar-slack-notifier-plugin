@@ -81,6 +81,11 @@ public class SlackNotifierPlugin implements Plugin {
                         .name("Send on failed Quality Gate")
                         .description("Should notification be sent only if Quality Gate did not pass OK")
                         .type(PropertyType.BOOLEAN)
+                        .build(),
+                    PropertyFieldDefinition.build(NOTIFY.property())
+                        .name("Notify")
+                        .description("add @ to someone before messages, for example @channel")
+                        .type(PropertyType.STRING)
                         .build()
                 )
                 .build());

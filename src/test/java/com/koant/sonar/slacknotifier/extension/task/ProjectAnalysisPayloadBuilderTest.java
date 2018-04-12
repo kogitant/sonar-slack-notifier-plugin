@@ -64,7 +64,7 @@ public class ProjectAnalysisPayloadBuilderTest {
     @Test
     public void testPayloadBuilder() {
         Analyses.qualityGateOk4Conditions(postProjectAnalysisTask);
-        ProjectConfig projectConfig = new ProjectConfig("key", "#channel", false);
+        ProjectConfig projectConfig = new ProjectConfig("key", "#channel", "here", false);
         Payload payload = ProjectAnalysisPayloadBuilder.of(postProjectAnalysisTask.getProjectAnalysis())
                 .projectConfig(projectConfig)
                 .i18n(i18n)
@@ -103,7 +103,7 @@ public class ProjectAnalysisPayloadBuilderTest {
                 .color("good")
                 .build());
         return Payload.builder()
-                .text("Project [Project Name] analyzed. See "
+                .text("<!here> Project [Project Name] analyzed. See "
                     + "http://localhist:9000/dashboard?id=project:key. Quality gate status: OK")
                 .channel("#channel")
                 .username("CKSSlackNotifier")
@@ -114,7 +114,7 @@ public class ProjectAnalysisPayloadBuilderTest {
     @Test
     public void shouldShowOnlyExceededConditionsIfProjectConfigReportOnlyOnFailedQualityGateWay() throws Exception {
         Analyses.qualityGateError2Of3ConditionsFailed(postProjectAnalysisTask);
-        ProjectConfig projectConfig = new ProjectConfig("key", "#channel", QG_FAIL_ONLY);
+        ProjectConfig projectConfig = new ProjectConfig("key", "#channel", "here", QG_FAIL_ONLY);
         Payload payload = ProjectAnalysisPayloadBuilder.of(postProjectAnalysisTask.getProjectAnalysis())
                 .projectConfig(projectConfig)
                 .i18n(i18n)
@@ -133,7 +133,7 @@ public class ProjectAnalysisPayloadBuilderTest {
     @Test
     public void buildPayloadWithoutQualityGateWay() throws Exception {
         Analyses.noQualityGate(postProjectAnalysisTask);
-        ProjectConfig projectConfig = new ProjectConfig("key", "#channel", false);
+        ProjectConfig projectConfig = new ProjectConfig("key", "#channel", "here", false);
         Payload payload = ProjectAnalysisPayloadBuilder.of(postProjectAnalysisTask.getProjectAnalysis())
                 .projectConfig(projectConfig)
                 .i18n(i18n)
@@ -143,5 +143,20 @@ public class ProjectAnalysisPayloadBuilderTest {
 
         assertThat(payload.getAttachments()).isNull();
         assertThat(payload.getText()).doesNotContain("Quality Gate status");
+    }
+
+    @Test
+    public void buildPayloadWithoutNotify() throws Exception {
+        Analyses.noQualityGate(postProjectAnalysisTask);
+        ProjectConfig projectConfig = new ProjectConfig("key", "#channel", "", false);
+        Payload payload = ProjectAnalysisPayloadBuilder.of(postProjectAnalysisTask.getProjectAnalysis())
+            .projectConfig(projectConfig)
+            .i18n(i18n)
+            .projectUrl("http://localhist:9000/dashboard?id=project:key")
+            .username("CKSSlackNotifier")
+            .build();
+
+        assertThat(payload.getAttachments()).isNull();
+        assertThat(payload.getText()).doesNotContain("here");
     }
 }
