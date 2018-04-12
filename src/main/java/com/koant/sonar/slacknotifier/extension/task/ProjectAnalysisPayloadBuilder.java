@@ -82,7 +82,7 @@ public class ProjectAnalysisPayloadBuilder {
         assertNotNull(i18n, "i18n");
         assertNotNull(analysis, "analysis");
 
-        String notifyPrefix = StringUtils.isEmpty(projectConfig.getNotify())? "":"<!" + projectConfig.getNotify() +"> ";
+        String notifyPrefix = projectConfig.getNotify() != null && projectConfig.getNotify() != ""? "<!" + projectConfig.getNotify() +"> ":"";
 
         QualityGate qualityGate = analysis.getQualityGate();
         String shortText = String.join("", notifyPrefix,
