@@ -1,20 +1,27 @@
 package com.koant.sonar.slacknotifier.extension.task;
 
+import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.*;
+
 import com.github.seratch.jslack.api.model.Attachment;
 import com.github.seratch.jslack.api.model.Field;
 import com.github.seratch.jslack.api.webhook.Payload;
 import com.koant.sonar.slacknotifier.common.component.ProjectConfig;
+import org.sonar.api.ce.posttask.Branch;
 import org.sonar.api.ce.posttask.PostProjectAnalysisTask;
 import org.sonar.api.ce.posttask.QualityGate;
 import org.sonar.api.i18n.I18n;
-import org.sonar.api.internal.apachecommons.lang.StringUtils;
 import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
 
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -22,7 +29,7 @@ import java.util.stream.Collectors;
  * Modified by poznachowski
  */
 
-public class ProjectAnalysisPayloadBuilder {
+class ProjectAnalysisPayloadBuilder {
     private static final Logger LOG = Loggers.get(ProjectAnalysisPayloadBuilder.class);
 
     private static final String SLACK_GOOD_COLOUR = "good";
@@ -36,11 +43,12 @@ public class ProjectAnalysisPayloadBuilder {
         statusToColor.put(QualityGate.Status.ERROR, SLACK_DANGER_COLOUR);
     }
 
-    I18n i18n;
-    PostProjectAnalysisTask.ProjectAnalysis analysis;
+    private I18n i18n;
+    private PostProjectAnalysisTask.ProjectAnalysis analysis;
     private ProjectConfig projectConfig;
     private String slackUser;
     private String projectUrl;
+    private boolean includeBranch;
 
     private DecimalFormat percentageFormat;
 
@@ -51,49 +59,61 @@ public class ProjectAnalysisPayloadBuilder {
         this.percentageFormat.setMaximumFractionDigits(2);
     }
 
-    public static ProjectAnalysisPayloadBuilder of(PostProjectAnalysisTask.ProjectAnalysis analysis) {
+    static ProjectAnalysisPayloadBuilder of(PostProjectAnalysisTask.ProjectAnalysis analysis) {
         return new ProjectAnalysisPayloadBuilder(analysis);
     }
 
-    public ProjectAnalysisPayloadBuilder projectConfig(ProjectConfig projectConfig) {
+    ProjectAnalysisPayloadBuilder projectConfig(ProjectConfig projectConfig) {
         this.projectConfig = projectConfig;
         return this;
     }
 
-    public ProjectAnalysisPayloadBuilder i18n(I18n i18n) {
+    ProjectAnalysisPayloadBuilder i18n(I18n i18n) {
         this.i18n = i18n;
         return this;
     }
 
-    public ProjectAnalysisPayloadBuilder username(String slackUser) {
+    ProjectAnalysisPayloadBuilder username(String slackUser) {
         this.slackUser = slackUser;
         return this;
     }
 
-    public ProjectAnalysisPayloadBuilder projectUrl(String projectUrl) {
+    ProjectAnalysisPayloadBuilder projectUrl(String projectUrl) {
         this.projectUrl = projectUrl;
         return this;
     }
 
-    public Payload build() {
+    ProjectAnalysisPayloadBuilder includeBranch(boolean includeBranch) {
+        this.includeBranch = includeBranch;
+        return this;
+    }
+
+    Payload build() {
         assertNotNull(projectConfig, "projectConfig");
         assertNotNull(projectUrl, "projectUrl");
         assertNotNull(slackUser, "slackUser");
         assertNotNull(i18n, "i18n");
         assertNotNull(analysis, "analysis");
 
-        String notifyPrefix = projectConfig.getNotify() != null && projectConfig.getNotify() != ""? "<!" + projectConfig.getNotify() +"> ":"";
+        String notifyPrefix = isNotBlank(projectConfig.getNotify()) ? format("<!%s> ", projectConfig.getNotify()) : "";
 
         QualityGate qualityGate = analysis.getQualityGate();
-        String shortText = String.join("", notifyPrefix,
-                "Project [", analysis.getProject().getName(), "] analyzed. See ",
-                projectUrl,
-                qualityGate == null ? "." : ". Quality gate status: " + qualityGate.getStatus());
+        StringBuilder shortText = new StringBuilder();
+        shortText.append(notifyPrefix);
+        shortText.append(format("Project [%s] analyzed", analysis.getProject().getName()));
+
+        Optional<Branch> branch = analysis.getBranch();
+        if(branch.isPresent() && !branch.get().isMain() && this.includeBranch) {
+            shortText.append(format(" for branch [%s]", branch.get().getName().orElse("")));
+        }
+        shortText.append(". ");
+        shortText.append(format("See %s", projectUrl));
+        shortText.append(qualityGate == null ? "." : format(". Quality gate status: %s", qualityGate.getStatus()));
 
         return Payload.builder()
                 .channel(projectConfig.getSlackChannel())
                 .username(slackUser)
-                .text(shortText)
+                .text(shortText.toString())
                 .attachments(qualityGate == null ? null : buildConditionsAttachment(qualityGate, projectConfig.isQgFailOnly()))
                 .build();
     }
@@ -200,6 +220,8 @@ public class ProjectAnalysisPayloadBuilder {
             case LESS_THAN:
                 sb.append("<");
                 break;
+            default:
+                break;
         }
     }
 
@@ -214,9 +236,9 @@ public class ProjectAnalysisPayloadBuilder {
             case CoreMetrics.NEW_COVERAGE_KEY:
             case CoreMetrics.NEW_SQALE_DEBT_RATIO_KEY:
                 return true;
+            default:
+                break;
         }
         return false;
     }
-
-
 }
