@@ -1,9 +1,10 @@
 package com.koant.sonar.slacknotifier.common.component;
 
 import com.koant.sonar.slacknotifier.common.SlackNotifierProp;
-import org.sonar.api.config.Settings;
+import org.sonar.api.config.Configuration;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Created by ak on 17/10/16.
@@ -14,13 +15,6 @@ public class ProjectConfig {
     private final String slackChannel;
     private final String notify;
     private final boolean qgFailOnly;
-
-    public ProjectConfig(String projectKey, String slackChannel, String notify, boolean qgFailOnly) {
-        this.projectKey = projectKey;
-        this.slackChannel = slackChannel;
-        this.notify = notify;
-        this.qgFailOnly = qgFailOnly;
-    }
 
     /**
      * Cloning constructor
@@ -34,13 +28,23 @@ public class ProjectConfig {
         this.notify = c.getNotify();
     }
 
-    static ProjectConfig create(Settings settings, String configurationId) {
+    public ProjectConfig(String projectKey, String slackChannel, String notify, boolean qgFailOnly) {
+        this.projectKey = projectKey;
+        this.slackChannel = slackChannel;
+        this.notify = notify;
+        this.qgFailOnly = qgFailOnly;
+    }
+
+    static ProjectConfig create(Configuration settings, String configurationId) {
         String configurationPrefix = SlackNotifierProp.CONFIG.property() + "." + configurationId + ".";
-        String projectKey = settings.getString(configurationPrefix + SlackNotifierProp.PROJECT.property());
-        String slackChannel = settings.getString(configurationPrefix + SlackNotifierProp.CHANNEL.property());
-        String notify = settings.getString(configurationPrefix+SlackNotifierProp.NOTIFY.property());
-        boolean qgFailOnly = settings.getBoolean(configurationPrefix + SlackNotifierProp.QG_FAIL_ONLY.property());
-        return new ProjectConfig(projectKey, slackChannel, notify, qgFailOnly);
+        Optional<String> projectKey = settings.get(configurationPrefix + SlackNotifierProp.PROJECT.property());
+        Optional<String> slackChannel = settings.get(configurationPrefix + SlackNotifierProp.CHANNEL.property());
+        Optional<String> notify = settings.get(configurationPrefix+SlackNotifierProp.NOTIFY.property());
+        Optional<Boolean> qgFailOnly = settings.getBoolean(configurationPrefix + SlackNotifierProp.QG_FAIL_ONLY.property());
+        if(!slackChannel.isPresent()){
+            throw new IllegalStateException("No slack channel configured, unable to continue");
+        }
+        return new ProjectConfig(projectKey.orElse(""), slackChannel.get(), notify.orElse(""), qgFailOnly.orElse(true));
     }
 
     public String getProjectKey() {
@@ -63,9 +67,9 @@ public class ProjectConfig {
         if (o == null || getClass() != o.getClass()) return false;
         ProjectConfig that = (ProjectConfig) o;
         return qgFailOnly == that.qgFailOnly &&
-                Objects.equals(projectKey, that.projectKey) &&
-                Objects.equals(notify, that.notify) &&
-                Objects.equals(slackChannel, that.slackChannel);
+            Objects.equals(projectKey, that.projectKey) &&
+            Objects.equals(notify, that.notify) &&
+            Objects.equals(slackChannel, that.slackChannel);
     }
 
     @Override
