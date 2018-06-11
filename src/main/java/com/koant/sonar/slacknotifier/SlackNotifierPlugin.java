@@ -1,5 +1,15 @@
 package com.koant.sonar.slacknotifier;
 
+import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.CHANNEL;
+import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.CONFIG;
+import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.ENABLED;
+import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.HOOK;
+import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.INCLUDE_BRANCH;
+import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.NOTIFY;
+import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.PROJECT;
+import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.QG_FAIL_ONLY;
+import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.USER;
+
 import com.koant.sonar.slacknotifier.extension.task.SlackPostProjectAnalysisTask;
 import org.sonar.api.Plugin;
 import org.sonar.api.PropertyType;
@@ -8,8 +18,6 @@ import org.sonar.api.config.PropertyFieldDefinition;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.*;
 
 public class SlackNotifierPlugin implements Plugin {
 
@@ -40,7 +48,7 @@ public class SlackNotifierPlugin implements Plugin {
             .build());
         extensions.add(PropertyDefinition.builder(USER.property())
             .name("Slack user alias")
-            .description("Messages from this plugin appear woth given username")
+            .description("Messages from this plugin appear with given username")
             .defaultValue("SonarQube Slack Notifier Plugin")
             .type(PropertyType.STRING)
             .category(CATEGORY)
@@ -56,7 +64,15 @@ public class SlackNotifierPlugin implements Plugin {
             .subCategory(SUBCATEGORY)
             .index(2)
             .build());
-
+        extensions.add(PropertyDefinition.builder(INCLUDE_BRANCH.property())
+            .name("Branch enabled")
+            .description("Include branch name in slack messages?\nNB: Not supported with free version of SonarQube")
+            .defaultValue("false")
+            .type(PropertyType.BOOLEAN)
+            .category(CATEGORY)
+            .subCategory(SUBCATEGORY)
+            .index(3)
+            .build());
 
         extensions.add(
             PropertyDefinition.builder(CONFIG.property())
@@ -65,7 +81,7 @@ public class SlackNotifierPlugin implements Plugin {
                         "If a slack channel is not configured for a project, no slack message will be sent for project.")
                 .category(CATEGORY)
                 .subCategory(SUBCATEGORY)
-                .index(3)
+                .index(4)
                 .fields(
                     PropertyFieldDefinition.build(PROJECT.property())
                         .name("Project Key")
@@ -81,6 +97,11 @@ public class SlackNotifierPlugin implements Plugin {
                         .name("Send on failed Quality Gate")
                         .description("Should notification be sent only if Quality Gate did not pass OK")
                         .type(PropertyType.BOOLEAN)
+                        .build(),
+                    PropertyFieldDefinition.build(NOTIFY.property())
+                        .name("Notify")
+                        .description("add @ to someone before messages, for example @channel")
+                        .type(PropertyType.STRING)
                         .build()
                 )
                 .build());
