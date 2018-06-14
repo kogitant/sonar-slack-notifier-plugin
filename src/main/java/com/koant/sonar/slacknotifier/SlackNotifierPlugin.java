@@ -40,7 +40,7 @@ public class SlackNotifierPlugin implements Plugin {
             .build());
         extensions.add(PropertyDefinition.builder(USER.property())
             .name("Slack user alias")
-            .description("Messages from this plugin appear woth given username")
+            .description("Messages from this plugin appear with given username")
             .defaultValue("SonarQube Slack Notifier Plugin")
             .type(PropertyType.STRING)
             .category(CATEGORY)
