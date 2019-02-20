@@ -67,9 +67,14 @@ public class SlackNotifierPlugin implements Plugin {
                 .subCategory(SUBCATEGORY)
                 .index(3)
                 .fields(
+                    PropertyFieldDefinition.build(PROJECT_HOOK.property())
+                        .name("Project Hook")
+                        .description("Ex: com.koant.sonar.slack:sonar-slack-notifier-plugin, can use '*' wildcard at the end")
+                        .type(PropertyType.STRING)
+                        .build(),
                     PropertyFieldDefinition.build(PROJECT.property())
                         .name("Project Key")
-                        .description("Ex: com.koant.sonar.slack:sonar-slack-notifier-plugin, can use '*' wildcard at the end")
+                        .description("https://api.slack.com/incoming-webhooks")
                         .type(PropertyType.STRING)
                         .build(),
                     PropertyFieldDefinition.build(CHANNEL.property())

@@ -40,6 +40,10 @@ public enum SlackNotifierProp {
     /**
      * @see SlackNotifierProp#CONFIG
      */
+    PROJECT_HOOK("projectHook"),
+    /**
+     * @see SlackNotifierProp#CONFIG
+     */
     PROJECT("project"),
     /**
      * @see SlackNotifierProp#CONFIG

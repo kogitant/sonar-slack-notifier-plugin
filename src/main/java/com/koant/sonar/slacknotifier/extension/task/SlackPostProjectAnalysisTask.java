@@ -8,6 +8,7 @@ import com.koant.sonar.slacknotifier.common.component.ProjectConfig;
 import org.sonar.api.ce.posttask.PostProjectAnalysisTask;
 import org.sonar.api.config.Settings;
 import org.sonar.api.i18n.I18n;
+import org.sonar.api.internal.apachecommons.lang.StringUtils;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
 
@@ -55,6 +56,15 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
             return;
         }
 
+        String hook = projectConfig.getProjectHook();
+        if (hook != null) {
+            hook = hook.trim();
+        }
+        LOG.info("Hook is: " + hook);
+        if (hook == null || hook.isEmpty()) {
+            hook = getSlackIncomingWebhookUrl();
+        }
+
         LOG.info("Slack notification will be sent: " + analysis.toString());
 
         Payload payload = ProjectAnalysisPayloadBuilder.of(analysis)
@@ -66,7 +76,7 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
 
         try {
             // See https://github.com/seratch/jslack
-            WebhookResponse response = slackClient.send(getSlackIncomingWebhookUrl(), payload);
+            WebhookResponse response = slackClient.send(hook, payload);
             if (!Integer.valueOf(200).equals(response.getCode())) {
                 LOG.error("Failed to post to slack, response is [{}]", response);
             }

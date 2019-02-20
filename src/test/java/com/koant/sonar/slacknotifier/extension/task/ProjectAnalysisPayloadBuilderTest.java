@@ -27,7 +27,7 @@ public class ProjectAnalysisPayloadBuilderTest {
     private static final boolean QG_FAIL_ONLY = true;
     CaptorPostProjectAnalysisTask postProjectAnalysisTask;
     DefaultI18n i18n;
-    
+
     Locale defaultLocale;
 
     @Before
@@ -43,11 +43,11 @@ public class ProjectAnalysisPayloadBuilderTest {
         defaultLocale = Locale.getDefault();
         Locale.setDefault(Locale.US);
     }
-    
+
     @After
     public void after(){
         Locale.setDefault(defaultLocale);
-        
+
     }
 
     @Test
@@ -64,7 +64,7 @@ public class ProjectAnalysisPayloadBuilderTest {
     @Test
     public void testPayloadBuilder() {
         Analyses.qualityGateOk4Conditions(postProjectAnalysisTask);
-        ProjectConfig projectConfig = new ProjectConfig("key", "#channel", false);
+        ProjectConfig projectConfig = new ProjectConfig("hook", "key", "#channel", false);
         Payload payload = ProjectAnalysisPayloadBuilder.of(postProjectAnalysisTask.getProjectAnalysis())
                 .projectConfig(projectConfig)
                 .i18n(i18n)
@@ -114,7 +114,7 @@ public class ProjectAnalysisPayloadBuilderTest {
     @Test
     public void shouldShowOnlyExceededConditionsIfProjectConfigReportOnlyOnFailedQualityGateWay() throws Exception {
         Analyses.qualityGateError2Of3ConditionsFailed(postProjectAnalysisTask);
-        ProjectConfig projectConfig = new ProjectConfig("key", "#channel", QG_FAIL_ONLY);
+        ProjectConfig projectConfig = new ProjectConfig("hook", "key", "#channel", QG_FAIL_ONLY);
         Payload payload = ProjectAnalysisPayloadBuilder.of(postProjectAnalysisTask.getProjectAnalysis())
                 .projectConfig(projectConfig)
                 .i18n(i18n)
@@ -133,7 +133,7 @@ public class ProjectAnalysisPayloadBuilderTest {
     @Test
     public void buildPayloadWithoutQualityGateWay() throws Exception {
         Analyses.noQualityGate(postProjectAnalysisTask);
-        ProjectConfig projectConfig = new ProjectConfig("key", "#channel", false);
+        ProjectConfig projectConfig = new ProjectConfig("hook", "key", "#channel", false);
         Payload payload = ProjectAnalysisPayloadBuilder.of(postProjectAnalysisTask.getProjectAnalysis())
                 .projectConfig(projectConfig)
                 .i18n(i18n)
