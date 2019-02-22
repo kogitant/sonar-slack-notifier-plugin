@@ -40,20 +40,40 @@ public class SlackNotifierPlugin implements Plugin {
             .build());
         extensions.add(PropertyDefinition.builder(USER.property())
             .name("Slack user alias")
-            .description("Messages from this plugin appear with given username")
+            .description("Messages from this plugin appear woth given username")
             .defaultValue("SonarQube Slack Notifier Plugin")
             .type(PropertyType.STRING)
             .category(CATEGORY)
             .subCategory(SUBCATEGORY)
             .index(1)
             .build());
-        extensions.add(PropertyDefinition.builder(ICON_URL.property())
-            .name("Slack icon Url")
-            .description("Messages from this plugin appear with given icon")
+        extensions.add(PropertyDefinition.builder(PROXY_IP.property())
+            .name("Proxy IP")
+            .description("IP address of proxy server to use")
+            .defaultValue("127.0.0.1")
             .type(PropertyType.STRING)
             .category(CATEGORY)
             .subCategory(SUBCATEGORY)
             .index(2)
+            .build());
+        extensions.add(PropertyDefinition.builder(PROXY_PORT.property())
+            .name("Proxy port")
+            .description("Port for proxy server")
+            .defaultValue("8080")
+            .type(PropertyType.INTEGER)
+            .category(CATEGORY)
+            .subCategory(SUBCATEGORY)
+            .index(3)
+            .build());
+        extensions.add(PropertyDefinition.builder(PROXY_PROTOCOL.property())
+            .name("Proxy protocol")
+            .description("Protocol to use to connect to proxy server")
+            .defaultValue("http")
+            .type(PropertyType.SINGLE_SELECT_LIST)
+            .options("http", "https")
+            .category(CATEGORY)
+            .subCategory(SUBCATEGORY)
+            .index(4)
             .build());
         extensions.add(PropertyDefinition.builder(ENABLED.property())
             .name("Plugin enabled")
@@ -62,7 +82,7 @@ public class SlackNotifierPlugin implements Plugin {
             .type(PropertyType.BOOLEAN)
             .category(CATEGORY)
             .subCategory(SUBCATEGORY)
-            .index(3)
+            .index(5)
             .build());
 
 
@@ -73,10 +93,11 @@ public class SlackNotifierPlugin implements Plugin {
                         "If a slack channel is not configured for a project, no slack message will be sent for project.")
                 .category(CATEGORY)
                 .subCategory(SUBCATEGORY)
-                .index(3)
+                .index(6)
                 .fields(
                     PropertyFieldDefinition.build(PROJECT.property())
                         .name("Project Key")
+                        .description("Ex: com.koant.sonar.slack:sonar-slack-notifier-plugin, can use '*' wildcard at the end")
                         .description("Regex that will match the Project Key of the project. Ex: com\\..* will match all projects that start with 'com.'")
                         .type(PropertyType.STRING)
                         .build(),
