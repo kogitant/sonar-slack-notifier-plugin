@@ -6,7 +6,7 @@ import com.google.gson.Gson;
 import com.koant.sonar.slacknotifier.common.component.AbstractSlackNotifyingComponent;
 import com.koant.sonar.slacknotifier.common.component.ProjectConfig;
 import org.sonar.api.ce.posttask.PostProjectAnalysisTask;
-import org.sonar.api.config.Settings;
+import org.sonar.api.config.Configuration;
 import org.sonar.api.i18n.I18n;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
@@ -34,7 +34,7 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
     private final I18n i18n;
     private final CloseableHttpClient httpClient;
 
-    public SlackPostProjectAnalysisTask(Settings settings, I18n i18n) {
+    public SlackPostProjectAnalysisTask(Configuration settings, I18n i18n) {
         this(HttpClientBuilder.create().build(), settings, i18n);
     }
     
@@ -64,12 +64,15 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
             return;
         }
 
+
+
         LOG.info("Slack notification will be sent: " + analysis.toString());
 
         Payload payload = ProjectAnalysisPayloadBuilder.of(analysis)
                 .i18n(i18n)
                 .projectConfig(projectConfig)
                 .projectUrl(projectUrl(projectKey))
+                .includeBranch(isBranchEnabled())
                 .username(getSlackUser())
                 .iconUrl(getIconUrl())
                 .build();

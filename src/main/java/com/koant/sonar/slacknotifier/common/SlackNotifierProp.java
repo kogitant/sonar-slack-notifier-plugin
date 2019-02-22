@@ -8,10 +8,12 @@ public enum SlackNotifierProp {
      * The Slack Incoming Web Hook URL
      */
     HOOK("ckss.hook"),
+
     /**
      * Appear in Slack channels as this user
      */
     USER("ckss.user"),
+
     /**
      * Appear in Slack channels with this icon
      */
@@ -30,9 +32,14 @@ public enum SlackNotifierProp {
     PROXY_PROTOCOL("ckss.proxy_protocol"),
 
     /**
+     * Include branch name in slack message (only supported in licenced versions of SonarQube)
+     */
+    INCLUDE_BRANCH("ckss.include_branch"),
+
+    /**
      * <p>
      * The project specific slack channels have to be configured in General, server side settings, instead of per project
-     * This property is the prefix for a comma separated valye list of Sonar Project Keys. For every project key there is a slack channel configuration.
+     * This property is the prefix for a comma separated value list of Sonar Project Keys. For every project key there is a slack channel configuration.
      * This is a standard SonarQube way of configuring multivalued fields with org.sonar.api.config.PropertyDefinition.Builder#fields
      * </p>
      * <pre>
@@ -48,14 +55,22 @@ public enum SlackNotifierProp {
      * @see SlackNotifierPlugin#define(org.sonar.api.Plugin.Context)
      */
     CONFIG("ckss.projectconfig"),
+
     /**
      * @see SlackNotifierProp#CONFIG
      */
     PROJECT("project"),
+
     /**
      * @see SlackNotifierProp#CONFIG
      */
     CHANNEL("channel"),
+
+    /**
+     * add @ to someone on notify message
+     */
+    NOTIFY("notify"),
+
     /**
      * @see SlackNotifierProp#CONFIG
      */
@@ -63,12 +78,13 @@ public enum SlackNotifierProp {
 
     private String property;
 
-
     SlackNotifierProp(java.lang.String property) {
+
         this.property = property;
     }
 
     public String property() {
+
         return property;
     }
 }

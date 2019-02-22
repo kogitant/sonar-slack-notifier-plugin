@@ -3,12 +3,18 @@ package com.koant.sonar.slacknotifier.common.component;
 import com.koant.sonar.slacknotifier.common.SlackNotifierProp;
 import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.CONFIG;
 import org.sonar.api.ce.posttask.QualityGate;
-import org.sonar.api.config.Settings;
+import org.sonar.api.config.Configuration;
 import org.sonar.api.utils.MessageException;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -19,10 +25,10 @@ public abstract class AbstractSlackNotifyingComponent {
 
     private static final Logger LOG = Loggers.get(AbstractSlackNotifyingComponent.class);
 
-    private final Settings settings;
+    private final Configuration settings;
     private Map<String, ProjectConfig> projectConfigMap = Collections.emptyMap();
 
-    public AbstractSlackNotifyingComponent(Settings settings) {
+    public AbstractSlackNotifyingComponent(Configuration settings) {
         this.settings = settings;
         LOG.info("Constructor called, project slack channel config map constructed from general settings");
     }
@@ -44,9 +50,9 @@ public abstract class AbstractSlackNotifyingComponent {
 
     private void refreshProjectConfigs() {
         LOG.info("Refreshing project configs");
-        Set<ProjectConfig> oldValues = new HashSet<>();
-        this.projectConfigMap.values().forEach(c -> oldValues.add(new ProjectConfig(c)));
-        this.projectConfigMap = buildProjectConfigByProjectKeyMap(settings);
+        Set<ProjectConfig> oldValues =  this.projectConfigMap.values().stream().
+            map(ProjectConfig::new).collect(Collectors.toSet());
+        this.projectConfigMap = buildProjectConfigByProjectKeyMap(this.settings);
         Set<ProjectConfig> newValues = new HashSet<>(this.projectConfigMap.values());
         if (!oldValues.equals(newValues)) {
             LOG.info("Old configs [{}] --> new configs [{}]", oldValues, newValues);
@@ -54,11 +60,15 @@ public abstract class AbstractSlackNotifyingComponent {
     }
 
     protected String getSlackIncomingWebhookUrl() {
-        return settings.getString(SlackNotifierProp.HOOK.property());
+
+        Optional<String> hook = settings.get(SlackNotifierProp.HOOK.property());
+        return hook.orElseThrow(() -> new IllegalStateException("Hook property not found"));
     }
 
     protected String getSlackUser() {
-        return settings.getString(SlackNotifierProp.USER.property());
+
+        Optional<String> user = settings.get(SlackNotifierProp.USER.property());
+        return user.orElseThrow(() -> new IllegalStateException("User property not found"));
     }
 
     protected String getIconUrl() {
@@ -66,7 +76,16 @@ public abstract class AbstractSlackNotifyingComponent {
     }
 
     protected boolean isPluginEnabled() {
-        return settings.getBoolean(SlackNotifierProp.ENABLED.property());
+        return settings.getBoolean(SlackNotifierProp.ENABLED.property()).orElseThrow(()
+            -> new IllegalStateException("Enabled property not found"));
+    }
+
+    /**
+     * @return value for INCLUDE_BRANCH property, defaults to false if for some reason not set.
+     */
+    protected boolean isBranchEnabled() {
+
+        return settings.getBoolean(SlackNotifierProp.INCLUDE_BRANCH.property()).orElse(false);
     }
     
     protected String getProxyIP() {
@@ -87,14 +106,15 @@ public abstract class AbstractSlackNotifyingComponent {
      * @return
      */
     protected String getSonarServerUrl() {
-        String u = settings.getString("sonar.core.serverBaseURL");
-        if (u == null) {
+        Optional<String> urlOptional = settings.get("sonar.core.serverBaseURL");
+        if (!urlOptional.isPresent()) {
             return null;
         }
-        if (u.endsWith("/")) {
-            return u;
+        String url = urlOptional.get();
+        if (url.endsWith("/")) {
+            return url;
         }
-        return u + "/";
+        return url + "/";
     }
 
     protected Optional<ProjectConfig> getProjectConfig(String projectKey) {
@@ -115,20 +135,20 @@ public abstract class AbstractSlackNotifyingComponent {
         return Optional.of(projectConfigs.get(0));
     }
 
-    private static Map<String, ProjectConfig> buildProjectConfigByProjectKeyMap(Settings settings) {
+    private static Map<String, ProjectConfig> buildProjectConfigByProjectKeyMap(Configuration settings) {
         Map<String, ProjectConfig> map = new HashMap<>();
         String[] projectConfigIndexes = settings.getStringArray(SlackNotifierProp.CONFIG.property());
         LOG.info("SlackNotifierProp.CONFIG=[{}]", projectConfigIndexes);
         for (String projectConfigIndex : projectConfigIndexes) {
             String projectKeyProperty = SlackNotifierProp.CONFIG.property() + "." + projectConfigIndex + "." + SlackNotifierProp.PROJECT.property();
-            String projectKey = settings.getString(projectKeyProperty);
-            if (projectKey == null) {
+            Optional<String> projectKey = settings.get(projectKeyProperty);
+            if (!projectKey.isPresent()) {
                 throw MessageException.of("Slack notifier configuration is corrupted. At least one project specific parameter has no project key. " +
                         "Contact your administrator to update this configuration in the global administration section of SonarQube.");
             }
             ProjectConfig value = ProjectConfig.create(settings, projectConfigIndex);
             LOG.info("Found project configuration [{}]", value);
-            map.put(projectKey, value);
+            map.put(projectKey.get(), value);
         }
         return map;
     }
@@ -142,11 +162,12 @@ public abstract class AbstractSlackNotifyingComponent {
         mapSetting(pluginSettings, SlackNotifierProp.PROXY_PROTOCOL);
         mapSetting(pluginSettings, SlackNotifierProp.ENABLED);
         mapSetting(pluginSettings, SlackNotifierProp.CONFIG);
+        mapSetting(pluginSettings, SlackNotifierProp.INCLUDE_BRANCH);
         return pluginSettings.toString() + "; project specific channel config: " + projectConfigMap;
     }
 
     private void mapSetting(Map<String, String> pluginSettings, SlackNotifierProp key) {
-        pluginSettings.put(key.name(), settings.getString(key.property()));
+        pluginSettings.put(key.name(), settings.get(key.property()).orElse(""));
     }
 
     protected boolean shouldSkipSendingNotification(ProjectConfig projectConfig, QualityGate qualityGate) {
