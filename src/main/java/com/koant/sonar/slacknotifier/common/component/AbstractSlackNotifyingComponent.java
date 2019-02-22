@@ -87,8 +87,7 @@ public abstract class AbstractSlackNotifyingComponent {
     protected Optional<ProjectConfig> getProjectConfig(String projectKey) {
         List<ProjectConfig> projectConfigs = projectConfigMap.keySet()
                 .stream()
-                .filter(key -> key.endsWith("*") ? projectKey.startsWith(key.substring(0, key.length() - 1))
-                        : key.equals(projectKey))
+                .filter(key -> projectKey.matches(key))
                 .map(projectConfigMap::get)
                 .collect(Collectors.toList());
         // Not configured at all
