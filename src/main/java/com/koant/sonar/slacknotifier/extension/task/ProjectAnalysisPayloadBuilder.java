@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.sonar.api.ce.posttask.Branch;
 import org.sonar.api.ce.posttask.PostProjectAnalysisTask;
 import org.sonar.api.ce.posttask.QualityGate;
 import org.sonar.api.i18n.I18n;
@@ -88,7 +90,7 @@ class ProjectAnalysisPayloadBuilder {
         return this;
     }
 
-    public ProjectAnalysisPayloadBuilder iconUrl(String iconUrl) {
+    ProjectAnalysisPayloadBuilder iconUrl(String iconUrl) {
         this.iconUrl = iconUrl;
         return this;       
     }
@@ -162,7 +164,7 @@ class ProjectAnalysisPayloadBuilder {
     /**
      * See https://api.slack.com/docs/message-attachments#message_formatting
      *
-     * @param condition
+     * @param condition the condition
      * @return
      */
     private Field translate(QualityGate.Condition condition) {

@@ -1,7 +1,6 @@
 package com.koant.sonar.slacknotifier.common.component;
 
 import com.koant.sonar.slacknotifier.common.SlackNotifierProp;
-import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.CONFIG;
 import org.sonar.api.ce.posttask.QualityGate;
 import org.sonar.api.config.Configuration;
 import org.sonar.api.utils.MessageException;
@@ -72,7 +71,8 @@ public abstract class AbstractSlackNotifyingComponent {
     }
 
     protected String getIconUrl() {
-        return settings.getString(SlackNotifierProp.ICON_URL.property());
+        final Optional<String> icon = settings.get(SlackNotifierProp.ICON_URL.property());
+        return icon.orElseThrow(() -> new IllegalStateException("Icon property not found"));
     }
 
     protected boolean isPluginEnabled() {
@@ -89,21 +89,27 @@ public abstract class AbstractSlackNotifyingComponent {
     }
     
     protected String getProxyIP() {
-        return settings.getString(SlackNotifierProp.PROXY_IP.property());
+
+        final Optional<String> proxyIp = settings.get(SlackNotifierProp.PROXY_IP.property());
+        return proxyIp.orElseThrow(() -> new IllegalStateException("Proxy IP property not found"));
     }
     
     protected int getProxyPort() {
-        return settings.getInt(SlackNotifierProp.PROXY_PORT.property());
+        final Optional<Integer> proxyPort = settings.getInt(SlackNotifierProp.PROXY_PORT.property());
+        return proxyPort.orElseThrow(() -> new IllegalStateException("Proxy port property not found"));
     }
     
     protected String getProxyProtocol() {
-        return settings.getString(SlackNotifierProp.PROXY_PROTOCOL.property());
+
+        final Optional<String> proxyProtocol = settings.get(SlackNotifierProp.PROXY_PROTOCOL.property());
+        return proxyProtocol.orElseThrow(() -> new IllegalStateException("Proxy protocol property not found"));
+
     }
 
     /**
      * Returns the sonar server url, with a trailing /
      *
-     * @return
+     * @return the sonar server URL
      */
     protected String getSonarServerUrl() {
         Optional<String> urlOptional = settings.get("sonar.core.serverBaseURL");
@@ -120,7 +126,7 @@ public abstract class AbstractSlackNotifyingComponent {
     protected Optional<ProjectConfig> getProjectConfig(String projectKey) {
         List<ProjectConfig> projectConfigs = projectConfigMap.keySet()
                 .stream()
-                .filter(key -> projectKey.matches(key))
+                .filter(projectKey::matches)
                 .map(projectConfigMap::get)
                 .collect(Collectors.toList());
         // Not configured at all
@@ -138,7 +144,7 @@ public abstract class AbstractSlackNotifyingComponent {
     private static Map<String, ProjectConfig> buildProjectConfigByProjectKeyMap(Configuration settings) {
         Map<String, ProjectConfig> map = new HashMap<>();
         String[] projectConfigIndexes = settings.getStringArray(SlackNotifierProp.CONFIG.property());
-        LOG.info("SlackNotifierProp.CONFIG=[{}]", projectConfigIndexes);
+        LOG.info("SlackNotifierProp.CONFIG=[{}]", (Object) projectConfigIndexes);
         for (String projectConfigIndex : projectConfigIndexes) {
             String projectKeyProperty = SlackNotifierProp.CONFIG.property() + "." + projectConfigIndex + "." + SlackNotifierProp.PROJECT.property();
             Optional<String> projectKey = settings.get(projectKeyProperty);

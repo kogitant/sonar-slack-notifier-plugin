@@ -7,6 +7,7 @@ import com.koant.sonar.slacknotifier.common.component.AbstractSlackNotifyingComp
 import com.koant.sonar.slacknotifier.common.component.ProjectConfig;
 import org.sonar.api.ce.posttask.PostProjectAnalysisTask;
 import org.sonar.api.config.Configuration;
+import org.sonar.api.config.Settings;
 import org.sonar.api.i18n.I18n;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
@@ -38,7 +39,7 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
         this(HttpClientBuilder.create().build(), settings, i18n);
     }
     
-    public SlackPostProjectAnalysisTask(CloseableHttpClient httpClient, Settings settings, I18n i18n) {
+    public SlackPostProjectAnalysisTask(CloseableHttpClient httpClient, Configuration settings, I18n i18n) {
         super(settings);
         this.i18n = i18n;
         this.httpClient = httpClient;

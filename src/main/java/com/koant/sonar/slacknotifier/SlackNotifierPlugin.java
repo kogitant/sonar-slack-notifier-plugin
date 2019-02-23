@@ -1,15 +1,5 @@
 package com.koant.sonar.slacknotifier;
 
-import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.CHANNEL;
-import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.CONFIG;
-import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.ENABLED;
-import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.HOOK;
-import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.INCLUDE_BRANCH;
-import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.NOTIFY;
-import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.PROJECT;
-import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.QG_FAIL_ONLY;
-import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.USER;
-
 import com.koant.sonar.slacknotifier.extension.task.SlackPostProjectAnalysisTask;
 import org.sonar.api.Plugin;
 import org.sonar.api.PropertyType;
@@ -18,6 +8,8 @@ import org.sonar.api.config.PropertyFieldDefinition;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.*;
 
 public class SlackNotifierPlugin implements Plugin {
 
