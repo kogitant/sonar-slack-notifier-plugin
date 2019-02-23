@@ -5,41 +5,35 @@ import com.github.seratch.jslack.common.json.GsonFactory;
 import com.google.gson.Gson;
 import com.koant.sonar.slacknotifier.common.component.AbstractSlackNotifyingComponent;
 import com.koant.sonar.slacknotifier.common.component.ProjectConfig;
+import okhttp3.*;
 import org.sonar.api.ce.posttask.PostProjectAnalysisTask;
 import org.sonar.api.config.Configuration;
-import org.sonar.api.config.Settings;
 import org.sonar.api.i18n.I18n;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
 
 import java.io.IOException;
 import java.util.Optional;
-import org.apache.http.HttpHost;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
-import org.assertj.core.util.Strings;
 
 /**
  * Created by 616286 on 3.6.2016.
  * Modified by gmilosavljevic
  */
-public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponent implements PostProjectAnalysisTask {    
+public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponent implements PostProjectAnalysisTask {
 
     private static final Logger LOG = Loggers.get(SlackPostProjectAnalysisTask.class);
 
     private final I18n i18n;
-    private final CloseableHttpClient httpClient;
+    private final SlackHttpClient httpClient;
 
     public SlackPostProjectAnalysisTask(Configuration settings, I18n i18n) {
-        this(HttpClientBuilder.create().build(), settings, i18n);
+        super(settings);
+        this.i18n = i18n;
+        this.httpClient = new SlackHttpClient(settings);
+
     }
-    
-    public SlackPostProjectAnalysisTask(CloseableHttpClient httpClient, Configuration settings, I18n i18n) {
+
+    SlackPostProjectAnalysisTask(SlackHttpClient httpClient, Configuration settings, I18n i18n) {
         super(settings);
         this.i18n = i18n;
         this.httpClient = httpClient;
@@ -55,6 +49,7 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
         LOG.info("Analysis ScannerContext: [{}]", analysis.getScannerContext().getProperties());
         String projectKey = analysis.getProject().getKey();
 
+        LOG.info("Looking for the configuration of the project {}", projectKey);
         Optional<ProjectConfig> projectConfigOptional = getProjectConfig(projectKey);
         if (!projectConfigOptional.isPresent()) {
             return;
@@ -66,54 +61,30 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
         }
 
 
-
         LOG.info("Slack notification will be sent: " + analysis.toString());
 
         Payload payload = ProjectAnalysisPayloadBuilder.of(analysis)
-                .i18n(i18n)
-                .projectConfig(projectConfig)
-                .projectUrl(projectUrl(projectKey))
-                .includeBranch(isBranchEnabled())
-                .username(getSlackUser())
-                .iconUrl(getIconUrl())
-                .build();
-        
-        Gson gson = GsonFactory.createSnakeCase();
-        String payloadJson = gson.toJson(payload);
-        
+            .i18n(i18n)
+            .projectConfig(projectConfig)
+            .projectUrl(projectUrl(projectKey))
+            .includeBranch(isBranchEnabled())
+            .username(getSlackUser())
+            .iconUrl(getIconUrl())
+            .build();
+
         try {
-            HttpPost request = new HttpPost(getSlackIncomingWebhookUrl());
-            request.addHeader("content-type", "application/x-www-form-urlencoded");
-            
-            RequestConfig config = RequestConfig.copy(RequestConfig.DEFAULT)
-                    .setConnectTimeout(5000)
-                    .setSocketTimeout(5000)
-                    .setProxy(getHttpProxy())
-                    .setConnectionRequestTimeout(5000)
-                    .build();
-            request.setConfig(config);            
-            request.setEntity(new StringEntity(payloadJson));
-            
-            LOG.info("Request configuration: [uri=" + request.getURI().toASCIIString() + ", config=" + config.toString() + ", payload=" + payloadJson);
-            
-            try (CloseableHttpResponse response = httpClient.execute(request)) {
-                LOG.info("Slack HTTP response status: " + response.getStatusLine().toString());
-                LOG.info("Slack HTTP response body: " + EntityUtils.toString(response.getEntity()));
+
+            if (this.httpClient.invokeSlackIncomingWebhook(payload)) {
+                LOG.info("Slack webhook invoked with success.");
+            } else {
+                throw new IllegalArgumentException("The Slack response has failed");
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOG.error("Failed to send slack message", e);
         }
     }
 
     private String projectUrl(String projectKey) {
         return getSonarServerUrl() + "dashboard?id=" + projectKey;
-    }
-
-    private HttpHost getHttpProxy() {
-        if (Strings.isNullOrEmpty(getProxyIP())) {
-            return null;
-        }
-        
-        return new HttpHost(getProxyIP(), getProxyPort(), getProxyProtocol());
     }
 }

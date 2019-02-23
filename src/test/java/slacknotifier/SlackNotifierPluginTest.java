@@ -30,16 +30,17 @@ public class SlackNotifierPluginTest {
         verify(mockContext, times(1)).addExtensions(arg.capture());
 
         List extensions = arg.getValue();
-        Assert.assertEquals(9, extensions.size());
+        Assert.assertEquals(10, extensions.size());
         Assert.assertEquals(HOOK.property(), ((PropertyDefinition) extensions.get(0)).key());
         Assert.assertEquals(USER.property(), ((PropertyDefinition) extensions.get(1)).key());
         Assert.assertEquals(PROXY_IP.property(), ((PropertyDefinition) extensions.get(2)).key());
         Assert.assertEquals(PROXY_PORT.property(), ((PropertyDefinition) extensions.get(3)).key());
         Assert.assertEquals(PROXY_PROTOCOL.property(), ((PropertyDefinition) extensions.get(4)).key());
-        Assert.assertEquals(PROXY_PROTOCOL.property(), ((PropertyDefinition) extensions.get(4)).key());
+        Assert.assertEquals(ENABLED.property(), ((PropertyDefinition) extensions.get(5)).key());
         Assert.assertEquals(INCLUDE_BRANCH.property(), ((PropertyDefinition) extensions.get(6)).key());
-        Assert.assertEquals(CONFIG.property(), ((PropertyDefinition) extensions.get(7)).key());
-        Assert.assertEquals(SlackPostProjectAnalysisTask.class, extensions.get(8));
+        Assert.assertEquals(DEFAULT_CHANNEL.property(), ((PropertyDefinition) extensions.get(7)).key());
+        Assert.assertEquals(CONFIG.property(), ((PropertyDefinition) extensions.get(8)).key());
+        Assert.assertEquals(SlackPostProjectAnalysisTask.class, extensions.get(9));
 
     }
 

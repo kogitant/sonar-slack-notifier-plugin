@@ -58,12 +58,6 @@ public abstract class AbstractSlackNotifyingComponent {
         }
     }
 
-    protected String getSlackIncomingWebhookUrl() {
-
-        Optional<String> hook = settings.get(SlackNotifierProp.HOOK.property());
-        return hook.orElseThrow(() -> new IllegalStateException("Hook property not found"));
-    }
-
     protected String getSlackUser() {
 
         Optional<String> user = settings.get(SlackNotifierProp.USER.property());
@@ -72,8 +66,14 @@ public abstract class AbstractSlackNotifyingComponent {
 
     protected String getIconUrl() {
         final Optional<String> icon = settings.get(SlackNotifierProp.ICON_URL.property());
-        return icon.orElseThrow(() -> new IllegalStateException("Icon property not found"));
+        return icon.orElse(null);
     }
+
+    protected String getDefaultChannel() {
+        final Optional<String> defaultChannel = settings.get(SlackNotifierProp.DEFAULT_CHANNEL.property());
+        return defaultChannel.orElseThrow(() -> new IllegalStateException("Default property not found"));
+    }
+
 
     protected boolean isPluginEnabled() {
         return settings.getBoolean(SlackNotifierProp.ENABLED.property()).orElseThrow(()
@@ -87,24 +87,6 @@ public abstract class AbstractSlackNotifyingComponent {
 
         return settings.getBoolean(SlackNotifierProp.INCLUDE_BRANCH.property()).orElse(false);
     }
-    
-    protected String getProxyIP() {
-
-        final Optional<String> proxyIp = settings.get(SlackNotifierProp.PROXY_IP.property());
-        return proxyIp.orElseThrow(() -> new IllegalStateException("Proxy IP property not found"));
-    }
-    
-    protected int getProxyPort() {
-        final Optional<Integer> proxyPort = settings.getInt(SlackNotifierProp.PROXY_PORT.property());
-        return proxyPort.orElseThrow(() -> new IllegalStateException("Proxy port property not found"));
-    }
-    
-    protected String getProxyProtocol() {
-
-        final Optional<String> proxyProtocol = settings.get(SlackNotifierProp.PROXY_PROTOCOL.property());
-        return proxyProtocol.orElseThrow(() -> new IllegalStateException("Proxy protocol property not found"));
-
-    }
 
     /**
      * Returns the sonar server url, with a trailing /
@@ -114,7 +96,7 @@ public abstract class AbstractSlackNotifyingComponent {
     protected String getSonarServerUrl() {
         Optional<String> urlOptional = settings.get("sonar.core.serverBaseURL");
         if (!urlOptional.isPresent()) {
-            return null;
+            return "http://pleaseDefineSonarQubeUrl/";
         }
         String url = urlOptional.get();
         if (url.endsWith("/")) {
@@ -132,7 +114,14 @@ public abstract class AbstractSlackNotifyingComponent {
         // Not configured at all
         if (projectConfigs.isEmpty()) {
             LOG.info("Could not find config for project [{}] in [{}]", projectKey, projectConfigMap);
-            return Optional.empty();
+
+            LOG.info("Building the default project config.");
+            final ProjectConfig projectConfig = new ProjectConfig(
+                projectKey,
+                getDefaultChannel(),
+                getSlackUser(),
+                false);
+            return Optional.of(projectConfig);
         }
 
         if(projectConfigs.size() > 1) {

@@ -1,21 +1,10 @@
 package com.koant.sonar.slacknotifier.extension.task;
 
-import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.*;
-
 import com.github.seratch.jslack.api.model.Attachment;
 import com.github.seratch.jslack.api.model.Field;
 import com.github.seratch.jslack.api.webhook.Payload;
 import com.github.seratch.jslack.api.webhook.Payload.PayloadBuilder;
 import com.koant.sonar.slacknotifier.common.component.ProjectConfig;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.sonar.api.ce.posttask.Branch;
 import org.sonar.api.ce.posttask.PostProjectAnalysisTask;
 import org.sonar.api.ce.posttask.QualityGate;
@@ -24,12 +13,13 @@ import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
 
-import java.text.NumberFormat;
+import java.text.DecimalFormat;
 import java.util.*;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 /**
  * Created by ak on 18/10/16.
  * Modified by poznachowski
@@ -92,9 +82,9 @@ class ProjectAnalysisPayloadBuilder {
 
     ProjectAnalysisPayloadBuilder iconUrl(String iconUrl) {
         this.iconUrl = iconUrl;
-        return this;       
+        return this;
     }
-    
+
     ProjectAnalysisPayloadBuilder includeBranch(boolean includeBranch) {
         this.includeBranch = includeBranch;
         return this;
@@ -115,7 +105,7 @@ class ProjectAnalysisPayloadBuilder {
         shortText.append(format("Project [%s] analyzed", analysis.getProject().getName()));
 
         Optional<Branch> branch = analysis.getBranch();
-        if(branch.isPresent() && !branch.get().isMain() && this.includeBranch) {
+        if (branch.isPresent() && !branch.get().isMain() && this.includeBranch) {
             shortText.append(format(" for branch [%s]", branch.get().getName().orElse("")));
         }
         shortText.append(". ");
@@ -123,10 +113,10 @@ class ProjectAnalysisPayloadBuilder {
         shortText.append(qualityGate == null ? "." : format(". Quality gate status: %s", qualityGate.getStatus()));
 
         PayloadBuilder builder = Payload.builder()
-                .channel(projectConfig.getSlackChannel())
-                .username(slackUser)
-                .text(shortText.toString())
-                .attachments(qualityGate == null ? null : buildConditionsAttachment(qualityGate, projectConfig.isQgFailOnly()));
+            .channel(projectConfig.getSlackChannel())
+            .username(slackUser)
+            .text(shortText.toString())
+            .attachments(qualityGate == null ? null : buildConditionsAttachment(qualityGate, projectConfig.isQgFailOnly()));
 
         if (iconUrl != null) {
             builder.iconUrl(iconUrl);
@@ -137,7 +127,7 @@ class ProjectAnalysisPayloadBuilder {
 
     private void assertNotNull(Object object, String argumentName) {
         if (object == null) {
-            throw new IllegalArgumentException("[Assertion failed] - " +argumentName + " argument is required; it must not be null");
+            throw new IllegalArgumentException("[Assertion failed] - " + argumentName + " argument is required; it must not be null");
         }
     }
 
@@ -145,20 +135,20 @@ class ProjectAnalysisPayloadBuilder {
 
         List<Attachment> attachments = new ArrayList<>();
         attachments.add(Attachment.builder()
-                .fields(
-                        qualityGate.getConditions()
-                                .stream()
-                                .filter(condition -> !qgFailOnly || notOkNorNoValue(condition))
-                                .map(this::translate)
-                                .collect(Collectors.toList()))
-                .color(statusToColor.get(qualityGate.getStatus()))
-                .build());
+            .fields(
+                qualityGate.getConditions()
+                    .stream()
+                    .filter(condition -> !qgFailOnly || notOkNorNoValue(condition))
+                    .map(this::translate)
+                    .collect(Collectors.toList()))
+            .color(statusToColor.get(qualityGate.getStatus()))
+            .build());
         return attachments;
     }
 
     private boolean notOkNorNoValue(QualityGate.Condition condition) {
-        return !(QualityGate.EvaluationStatus.OK.equals(condition.getStatus())
-                || QualityGate.EvaluationStatus.NO_VALUE.equals(condition.getStatus()));
+        return !( QualityGate.EvaluationStatus.OK.equals(condition.getStatus())
+            || QualityGate.EvaluationStatus.NO_VALUE.equals(condition.getStatus()) );
     }
 
     /**
@@ -174,9 +164,9 @@ class ProjectAnalysisPayloadBuilder {
         if (QualityGate.EvaluationStatus.NO_VALUE.equals(condition.getStatus())) {
             // No value for given metric
             return Field.builder().title(conditionName)
-                    .value(condition.getStatus().name())
-                    .valueShortEnough(true)
-                    .build();
+                .value(condition.getStatus().name())
+                .valueShortEnough(true)
+                .build();
         } else {
             StringBuilder sb = new StringBuilder();
             appendValue(condition, sb);
@@ -194,9 +184,9 @@ class ProjectAnalysisPayloadBuilder {
                 appendValuePostfix(condition, sb);
             }
             return Field.builder().title(conditionName + ": " + condition.getStatus().name())
-                    .value(sb.toString())
-                    .valueShortEnough(false)
-                    .build();
+                .value(sb.toString())
+                .valueShortEnough(false)
+                .build();
 
         }
     }
@@ -205,21 +195,17 @@ class ProjectAnalysisPayloadBuilder {
         if ("".equals(condition.getValue())) {
             sb.append("-");
         } else {
-            if (valueIsPercentage(condition)){
+            if (valueIsPercentage(condition)) {
                 appendPercentageValue(condition.getValue(), sb);
-            }else {
+            } else {
                 sb.append(condition.getValue());
             }
         }
     }
 
-    private void appendPercentageValue(String s, StringBuilder sb) {
-        try {
-            Double d = Double.parseDouble(s);
-            sb.append(percentageFormat.format(d));
-        }catch(NumberFormatException e){
-            LOG.error("Failed to parse [{}] into a Double due to [{}]", s, e.getMessage());
-            sb.append(s);
+    private void appendValuePostfix(QualityGate.Condition condition, StringBuilder sb) {
+        if (valueIsPercentage(condition)) {
+            sb.append("%");
         }
     }
 
@@ -242,13 +228,7 @@ class ProjectAnalysisPayloadBuilder {
         }
     }
 
-    private void appendValuePostfix(QualityGate.Condition condition, StringBuilder sb) {
-        if(valueIsPercentage(condition)){
-            sb.append("%");
-        }
-    }
-
-    private boolean valueIsPercentage(QualityGate.Condition condition){
+    private boolean valueIsPercentage(QualityGate.Condition condition) {
         switch (condition.getMetricKey()) {
             case CoreMetrics.NEW_COVERAGE_KEY:
             case CoreMetrics.NEW_SQALE_DEBT_RATIO_KEY:
@@ -258,4 +238,15 @@ class ProjectAnalysisPayloadBuilder {
         }
         return false;
     }
+
+    private void appendPercentageValue(String s, StringBuilder sb) {
+        try {
+            Double d = Double.parseDouble(s);
+            sb.append(percentageFormat.format(d));
+        } catch (NumberFormatException e) {
+            LOG.error("Failed to parse [{}] into a Double due to [{}]", s, e.getMessage());
+            sb.append(s);
+        }
+    }
 }
+

@@ -30,7 +30,10 @@ public enum SlackNotifierProp {
     PROXY_IP("ckss.proxy_ip"),
     PROXY_PORT("ckss.proxy_port"),
     PROXY_PROTOCOL("ckss.proxy_protocol"),
-
+    /**
+     * Appear in Slack channels as this user
+     */
+    DEFAULT_CHANNEL("ckss.channel"),
     /**
      * Include branch name in slack message (only supported in licenced versions of SonarQube)
      */
