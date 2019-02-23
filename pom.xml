@@ -156,7 +156,7 @@
           <pluginIssueTrackerUrl>https://github.com/sleroy/sonar-slack-notifier-plugin/issues</pluginIssueTrackerUrl>
           <pluginSourcesUrl>https://github.com/sleroy/sonar-slack-notifier-plugin</pluginSourcesUrl>
           <pluginOrganizationName>Antti Koivisto</pluginOrganizationName>
-          <pluginOrganizationUrl>https://github.com/sleroy</pluginOrganizationUrl>
+          <pluginOrganizationUrl>https://github.com/kogitant</pluginOrganizationUrl>
         </configuration>
       </plugin>
     </plugins>
