@@ -49,8 +49,7 @@ Notifications can be sent for all Quality Gate statuses, or just for WARNING/ERR
 ![](documentation/screenshots/example_slack_message_all_green.png)
 
 # Works with
-* Tested with SonarQube 6.1 against Slack on 2016.10.17
-* Tested with SonarQube 6.1 against Mattermost 3.5.0 on 2017.01.02
+* Tested with SonarQube 7.2 and 7.3 against Slack on 23.02.2019
 
 # Inspired by
 * https://github.com/astrebel/sonar-slack-notifier-plugin
