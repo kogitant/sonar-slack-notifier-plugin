@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.koant.sonar.slack</groupId>
   <artifactId>cks-slack-notifier</artifactId>
-  <version>2.4-SNAPSHOT</version>
+  <version>2.4</version>
   <packaging>sonar-plugin</packaging>
 
   <name>CKS Slack Notifier Plugin</name>
@@ -25,7 +25,7 @@
     <connection>scm:git:git@github.com:kogitant/sonar-slack-notifier-plugin.git</connection>
     <url>scm:git:git@github.com:kogitant/sonar-slack-notifier-plugin.git</url>
     <developerConnection>scm:git:git@github.com:kogitant/sonar-slack-notifier-plugin.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>cks-slack-notifier-2.4</tag>
   </scm>
   
 
