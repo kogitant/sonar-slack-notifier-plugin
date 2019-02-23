@@ -18,7 +18,7 @@
 
     <!-- JaCoCo support -->
     <argLine />
-    <sonar.version>7.3</sonar.version>
+    <sonar.version>7.2</sonar.version>
   </properties>
 
   <scm>
