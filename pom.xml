@@ -22,9 +22,9 @@
   </properties>
 
   <scm>
-    <connection>scm:git:git@github.com:kogitant/sonar-slack-notifier-plugin.git</connection>
-    <url>scm:git:git@github.com:kogitant/sonar-slack-notifier-plugin.git</url>
-    <developerConnection>scm:git:git@github.com:kogitant/sonar-slack-notifier-plugin.git</developerConnection>
+    <connection>scm:git:git@github.com:sleroy/sonar-slack-notifier-plugin.git</connection>
+    <url>scm:git:git@github.com:sleroy/sonar-slack-notifier-plugin.git</url>
+    <developerConnection>scm:git:git@github.com:sleroy/sonar-slack-notifier-plugin.git</developerConnection>
     <tag>cks-slack-notifier-2.4</tag>
   </scm>
   
@@ -152,11 +152,11 @@
           <pluginName>CKS Slack Notifier</pluginName>
           <pluginDescription>Sends notifications to Slack</pluginDescription>
           <sonarQubeMinVersion>6.5</sonarQubeMinVersion>
-          <pluginUrl>https://github.com/kogitant/sonar-slack-notifier-plugin</pluginUrl>
-          <pluginIssueTrackerUrl>https://github.com/kogitant/sonar-slack-notifier-plugin/issues</pluginIssueTrackerUrl>
-          <pluginSourcesUrl>https://github.com/kogitant/sonar-slack-notifier-plugin</pluginSourcesUrl>
+          <pluginUrl>https://github.com/sleroy/sonar-slack-notifier-plugin</pluginUrl>
+          <pluginIssueTrackerUrl>https://github.com/sleroy/sonar-slack-notifier-plugin/issues</pluginIssueTrackerUrl>
+          <pluginSourcesUrl>https://github.com/sleroy/sonar-slack-notifier-plugin</pluginSourcesUrl>
           <pluginOrganizationName>Antti Koivisto</pluginOrganizationName>
-          <pluginOrganizationUrl>https://github.com/kogitant</pluginOrganizationUrl>
+          <pluginOrganizationUrl>https://github.com/sleroy</pluginOrganizationUrl>
         </configuration>
       </plugin>
     </plugins>
