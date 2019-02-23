@@ -134,6 +134,7 @@ class ProjectAnalysisPayloadBuilder {
     private List<Attachment> buildConditionsAttachment(QualityGate qualityGate, boolean qgFailOnly) {
 
         List<Attachment> attachments = new ArrayList<>();
+
         attachments.add(Attachment.builder()
             .fields(
                 qualityGate.getConditions()

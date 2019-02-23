@@ -69,25 +69,25 @@ public class SlackHttpClient {
         );
     }
 
-    protected Proxy.Type getProxyProtocol() {
+    private Proxy.Type getProxyProtocol() {
 
         final Optional<String> proxyProtocol = settings.get(SlackNotifierProp.PROXY_PROTOCOL.property());
         return proxyProtocol.map(Proxy.Type::valueOf).orElseThrow(() -> new IllegalStateException("Proxy type property not found"));
 
     }
 
-    protected String getProxyIP() {
+    private String getProxyIP() {
 
         final Optional<String> proxyIp = settings.get(SlackNotifierProp.PROXY_IP.property());
         return proxyIp.orElse(null);
     }
 
-    protected int getProxyPort() {
+    private int getProxyPort() {
         final Optional<Integer> proxyPort = settings.getInt(SlackNotifierProp.PROXY_PORT.property());
         return proxyPort.orElseThrow(() -> new IllegalStateException("Proxy port property not found"));
     }
 
-    public boolean invokeSlackIncomingWebhook(final Payload payload) throws IOException {
+    boolean invokeSlackIncomingWebhook(final Payload payload) throws IOException {
 
         Gson gson = GsonFactory.createSnakeCase();
         String payloadJson = gson.toJson(payload);

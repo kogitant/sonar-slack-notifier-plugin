@@ -85,7 +85,7 @@ public class SlackPostProjectAnalysisTaskTest {
         task.finished(postProjectAnalysisTask.getProjectAnalysis());
         Mockito.verifyZeroInteractions(httpClient);
     }
-    
+
     @Test
     public void shouldSkipIfReportFailedQualityGateButOk() throws Exception {
         settings.setProperty(CONFIG.property() + "." + PROJECT_KEY + "." + QG_FAIL_ONLY.property(), "true");

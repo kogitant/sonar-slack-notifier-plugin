@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.koant.sonar.slacknotifier.common.component.AbstractSlackNotifyingComponent;
 import com.koant.sonar.slacknotifier.common.component.ProjectConfig;
 import okhttp3.*;
+import org.assertj.core.util.VisibleForTesting;
 import org.sonar.api.ce.posttask.PostProjectAnalysisTask;
 import org.sonar.api.config.Configuration;
 import org.sonar.api.i18n.I18n;
@@ -26,6 +27,11 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
     private final I18n i18n;
     private final SlackHttpClient httpClient;
 
+    /**
+     * Default constructor invoked by SonarQube.
+     * @param settings
+     * @param i18n
+     */
     public SlackPostProjectAnalysisTask(Configuration settings, I18n i18n) {
         super(settings);
         this.i18n = i18n;
@@ -33,6 +39,7 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
 
     }
 
+    @VisibleForTesting
     SlackPostProjectAnalysisTask(SlackHttpClient httpClient, Configuration settings, I18n i18n) {
         super(settings);
         this.i18n = i18n;
@@ -40,7 +47,7 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
     }
 
     @Override
-    public void finished(ProjectAnalysis analysis) {
+    public void finished(final ProjectAnalysis analysis) {
         refreshSettings();
         if (!isPluginEnabled()) {
             LOG.info("Slack notifier plugin disabled, skipping. Settings are [{}]", logRelevantSettings());
