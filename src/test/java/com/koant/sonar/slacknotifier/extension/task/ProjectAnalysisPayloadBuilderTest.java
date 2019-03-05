@@ -6,6 +6,7 @@ import com.github.seratch.jslack.api.model.Attachment;
 import com.github.seratch.jslack.api.model.Field;
 import com.github.seratch.jslack.api.webhook.Payload;
 import com.koant.sonar.slacknotifier.common.component.ProjectConfig;
+import com.koant.sonar.slacknotifier.common.component.ProjectConfigBuilder;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -67,7 +68,11 @@ public class ProjectAnalysisPayloadBuilderTest {
     @Test
     public void testPayloadBuilder() {
         Analyses.qualityGateOk4Conditions(postProjectAnalysisTask);
-        ProjectConfig projectConfig = new ProjectConfig("hook", "key", "#channel", false);
+        ProjectConfig projectConfig = new ProjectConfigBuilder().setProjectHook("hook")
+                                                                .setProjectKeyOrRegExp("key")
+                                                                .setSlackChannel("#channel")
+                                                                .setNotify("")
+                                                                .setQgFailOnly(false).build();
         Payload payload = ProjectAnalysisPayloadBuilder.of(postProjectAnalysisTask.getProjectAnalysis())
                 .projectConfig(projectConfig)
                 .i18n(i18n)
@@ -106,7 +111,7 @@ public class ProjectAnalysisPayloadBuilderTest {
                 .color("good")
                 .build());
         return Payload.builder()
-                .text("<!here> Project [Project Name] analyzed. See "
+                .text("Project [Sonar Project Name] analyzed. See "
                     + "http://localhist:9000/dashboard?id=project:key. Quality gate status: OK")
                 .channel("#channel")
                 .username("CKSSlackNotifier")
@@ -117,7 +122,9 @@ public class ProjectAnalysisPayloadBuilderTest {
     @Test
     public void shouldShowOnlyExceededConditionsIfProjectConfigReportOnlyOnFailedQualityGateWay() {
         Analyses.qualityGateError2Of3ConditionsFailed(postProjectAnalysisTask);
-        ProjectConfig projectConfig = new ProjectConfig("hook", "key", "#channel", QG_FAIL_ONLY);
+        ProjectConfig projectConfig = new ProjectConfigBuilder().setProjectHook("hook").setProjectKeyOrRegExp("key")
+                                                                .setSlackChannel("#channel").setNotify("")
+                                                                .setQgFailOnly(QG_FAIL_ONLY).build();
         Payload payload = ProjectAnalysisPayloadBuilder.of(postProjectAnalysisTask.getProjectAnalysis())
                 .projectConfig(projectConfig)
                 .i18n(i18n)
@@ -136,7 +143,9 @@ public class ProjectAnalysisPayloadBuilderTest {
     @Test
     public void buildPayloadWithoutQualityGateWay() {
         Analyses.noQualityGate(postProjectAnalysisTask);
-        ProjectConfig projectConfig = new ProjectConfig("hook", "key", "#channel", false);
+        ProjectConfig projectConfig = new ProjectConfigBuilder().setProjectHook("hook").setProjectKeyOrRegExp("key")
+                                                                .setSlackChannel("#channel").setNotify("")
+                                                                .setQgFailOnly(false).build();
         Payload payload = ProjectAnalysisPayloadBuilder.of(postProjectAnalysisTask.getProjectAnalysis())
                 .projectConfig(projectConfig)
                 .i18n(i18n)
@@ -151,7 +160,9 @@ public class ProjectAnalysisPayloadBuilderTest {
     @Test
     public void buildPayloadWithoutNotify() {
         Analyses.noQualityGate(postProjectAnalysisTask);
-        ProjectConfig projectConfig = new ProjectConfig("key", "#channel", "", false);
+        ProjectConfig projectConfig = new ProjectConfigBuilder().setProjectHook("key").setProjectKeyOrRegExp("#channel")
+                                                                .setSlackChannel("").setNotify("").setQgFailOnly(false)
+                                                                .build();
         Payload payload = ProjectAnalysisPayloadBuilder.of(postProjectAnalysisTask.getProjectAnalysis())
             .projectConfig(projectConfig)
             .i18n(i18n)
@@ -168,12 +179,14 @@ public class ProjectAnalysisPayloadBuilderTest {
         Analyses.noQualityGate(postProjectAnalysisTask);
         String notify = RandomStringUtils.random(10);
         Payload payload = ProjectAnalysisPayloadBuilder.of(postProjectAnalysisTask.getProjectAnalysis())
-            .projectConfig(new ProjectConfig("key", "#channel", notify, false))
+            .projectConfig(new ProjectConfigBuilder().setProjectHook("hook").setProjectKeyOrRegExp("kew")
+                                                     .setSlackChannel("#channel").setNotify(notify).setQgFailOnly(false).build())
             .i18n(i18n)
             .projectUrl("http://localhost:9000/dashboard?id=project:key")
             .username("CKSSlackNotifier")
             .build();
-        Assert.assertEquals(String.format("<!%s> Project [Project Name] analyzed. See http://localhost:9000/dashboard?id=project:key.",
+        Assert.assertEquals(String.format("<!%s> Project [Sonar Project Name] analyzed. See " +
+                                              "http://localhost:9000/dashboard?id=project:key.",
             notify), payload.getText());
     }
 
@@ -185,13 +198,15 @@ public class ProjectAnalysisPayloadBuilderTest {
 
         Analyses.withBranch(postProjectAnalysisTask, newBranch(branchName, isMain));
         Payload payload = ProjectAnalysisPayloadBuilder.of(postProjectAnalysisTask.getProjectAnalysis())
-            .projectConfig(new ProjectConfig("key", "#channel", "", false))
+            .projectConfig(new ProjectConfigBuilder().setProjectHook("key").setProjectKeyOrRegExp("#channel").setSlackChannel(
+                "").setNotify("").setQgFailOnly(false).build())
             .i18n(i18n)
             .projectUrl("http://localhost:9000/dashboard?id=project:key")
             .username("CKSSlackNotifier")
             .includeBranch(true)
             .build();
-        Assert.assertEquals("Project [Project Name] analyzed. See http://localhost:9000/dashboard?id=project:key.", payload.getText());
+        Assert.assertEquals("Project [Sonar Project Name] analyzed. See " +
+                                "http://localhost:9000/dashboard?id=project:key.", payload.getText());
     }
 
     @Test
@@ -200,13 +215,14 @@ public class ProjectAnalysisPayloadBuilderTest {
         String branchName = RandomStringUtils.random(10);
         Analyses.withBranch(postProjectAnalysisTask, newBranch(branchName, false));
         Payload payload = ProjectAnalysisPayloadBuilder.of(postProjectAnalysisTask.getProjectAnalysis())
-            .projectConfig(new ProjectConfig("key", "#channel", "", false))
+            .projectConfig(new ProjectConfigBuilder().setProjectHook("key").setProjectKeyOrRegExp("#channel").setSlackChannel(
+                "").setNotify("").setQgFailOnly(false).build())
             .i18n(i18n)
             .projectUrl("http://localhost:9000/dashboard?id=project:key")
             .username("CKSSlackNotifier")
             .includeBranch(true)
             .build();
-        Assert.assertEquals(String.format("Project [Project Name] analyzed for branch [%s]. See http://localhost:9000/dashboard?id=project:key.",
+        Assert.assertEquals(String.format("Project [Sonar Project Name] analyzed for branch [%s]. See http://localhost:9000/dashboard?id=project:key.",
             branchName), payload.getText());
     }
 
@@ -215,13 +231,14 @@ public class ProjectAnalysisPayloadBuilderTest {
 
         Analyses.simple(postProjectAnalysisTask);
         Payload payload = ProjectAnalysisPayloadBuilder.of(postProjectAnalysisTask.getProjectAnalysis())
-            .projectConfig(new ProjectConfig("key", "#channel", "", false))
+            .projectConfig(new ProjectConfigBuilder().setProjectHook("key").setProjectKeyOrRegExp("#channel").setSlackChannel(
+                "").setNotify("").setQgFailOnly(false).build())
             .i18n(i18n)
             .projectUrl("http://localhost:9000/dashboard?id=project:key")
             .username("CKSSlackNotifier")
             .includeBranch(true)
             .build();
-        Assert.assertEquals("Project [Project Name] analyzed. See http://localhost:9000/dashboard?id=project:key. Quality gate status: OK", payload.getText());
+        Assert.assertEquals("Project [Sonar Project Name] analyzed. See http://localhost:9000/dashboard?id=project:key. Quality gate status: OK", payload.getText());
     }
 
     private Branch newBranch(String name, boolean isMain) {

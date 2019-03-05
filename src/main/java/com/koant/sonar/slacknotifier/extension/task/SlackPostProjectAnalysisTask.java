@@ -1,16 +1,12 @@
 package com.koant.sonar.slacknotifier.extension.task;
 
 import com.github.seratch.jslack.api.webhook.Payload;
-import com.github.seratch.jslack.common.json.GsonFactory;
-import com.google.gson.Gson;
 import com.koant.sonar.slacknotifier.common.component.AbstractSlackNotifyingComponent;
 import com.koant.sonar.slacknotifier.common.component.ProjectConfig;
-import okhttp3.*;
 import org.assertj.core.util.VisibleForTesting;
 import org.sonar.api.ce.posttask.PostProjectAnalysisTask;
 import org.sonar.api.config.Configuration;
 import org.sonar.api.i18n.I18n;
-import org.sonar.api.internal.apachecommons.lang.StringUtils;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
 
@@ -63,6 +59,7 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
             return;
         }
 
+
         ProjectConfig projectConfig = projectConfigOptional.get();
         if (shouldSkipSendingNotification(projectConfig, analysis.getQualityGate())) {
             return;
@@ -74,7 +71,7 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
         }
         LOG.info("Hook is: " + hook);
         if (hook == null || hook.isEmpty()) {
-            hook = getSlackIncomingWebhookUrl();
+            hook = getDefaultHook();
         }
 
         LOG.info("Slack notification will be sent: " + analysis.toString());
@@ -90,7 +87,7 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
 
         try {
 
-            if (this.httpClient.invokeSlackIncomingWebhook(payload)) {
+            if (this.httpClient.invokeSlackIncomingWebhook(hook, payload)) {
                 LOG.info("Slack webhook invoked with success.");
             } else {
                 throw new IllegalArgumentException("The Slack response has failed");

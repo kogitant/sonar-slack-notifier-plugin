@@ -21,6 +21,7 @@ import com.github.seratch.jslack.common.json.GsonFactory;
 import com.google.gson.Gson;
 import com.koant.sonar.slacknotifier.common.SlackNotifierProp;
 import okhttp3.*;
+import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,12 +88,14 @@ public class SlackHttpClient {
         return proxyPort.orElseThrow(() -> new IllegalStateException("Proxy port property not found"));
     }
 
-    boolean invokeSlackIncomingWebhook(final Payload payload) throws IOException {
+    boolean invokeSlackIncomingWebhook(final String projectCustomHook, final Payload payload) throws IOException {
 
         Gson gson = GsonFactory.createSnakeCase();
         String payloadJson = gson.toJson(payload);
 
-        Request.Builder requestBuilder = new Request.Builder().url(getSlackIncomingWebhookUrl());
+        String slackIncomingWebhookUrl = StringUtils.isEmpty(projectCustomHook) ? getSlackIncomingWebhookUrl() :
+            projectCustomHook;
+        Request.Builder requestBuilder = new Request.Builder().url(slackIncomingWebhookUrl);
         requestBuilder.addHeader("content-type", "application/x-www-form-urlencoded");
         requestBuilder.post(RequestBody.create(MediaType.parse("application/x-www-form-urlencoded"), payloadJson));
         final Request request = requestBuilder.build();

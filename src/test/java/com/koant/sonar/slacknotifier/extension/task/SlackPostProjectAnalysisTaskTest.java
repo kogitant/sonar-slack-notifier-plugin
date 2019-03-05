@@ -2,7 +2,6 @@ package com.koant.sonar.slacknotifier.extension.task;
 
 import com.github.seratch.jslack.api.webhook.Payload;
 import com.koant.sonar.slacknotifier.common.SlackNotifierProp;
-import okhttp3.Request;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
@@ -28,7 +27,7 @@ import static org.mockito.Mockito.*;
  */
 public class SlackPostProjectAnalysisTaskTest {
 
-    private static final String HOOK = "http://hook";
+    private static final String HOOK          = "http://hook";
     private static final String DIFFERENT_KEY = "different:key";
 
     private CaptorPostProjectAnalysisTask postProjectAnalysisTask;
@@ -38,7 +37,7 @@ public class SlackPostProjectAnalysisTaskTest {
     private SlackHttpClient httpClient;
 
     private Settings settings;
-    private I18n i18n;
+    private I18n     i18n;
 
     @Before
     public void before() throws IOException {
@@ -54,7 +53,7 @@ public class SlackPostProjectAnalysisTaskTest {
         settings.setProperty(PROXY_PROTOCOL.property(), "http");
         settings.setProperty(DEFAULT_CHANNEL.property(), "general");
         settings.setProperty(CONFIG.property(), PROJECT_KEY);
-        settings.setProperty(CONFIG.property() + "." + PROJECT_KEY + "." + PROJECT.property(), PROJECT_KEY);
+        settings.setProperty(CONFIG.property() + "." + PROJECT_KEY + "." + PROJECT_REGEXP.property(), PROJECT_KEY);
         settings.setProperty(CONFIG.property() + "." + PROJECT_KEY + "." + CHANNEL.property(), "#random");
         settings.setProperty(CONFIG.property() + "." + PROJECT_KEY + "." + QG_FAIL_ONLY.property(), "false");
         settings.setProperty("sonar.core.serverBaseURL", "http://your.sonar.com/");
@@ -73,9 +72,9 @@ public class SlackPostProjectAnalysisTaskTest {
     @Test
     public void shouldCall() throws Exception {
         Analyses.simple(postProjectAnalysisTask);
-        when(httpClient.invokeSlackIncomingWebhook(isA(Payload.class))).thenReturn(true);
+        when(httpClient.invokeSlackIncomingWebhook(Mockito.eq(HOOK), isA(Payload.class))).thenReturn(true);
         task.finished(postProjectAnalysisTask.getProjectAnalysis());
-        Mockito.verify(httpClient, times(1)).invokeSlackIncomingWebhook(isA(Payload.class));
+        Mockito.verify(httpClient, times(1)).invokeSlackIncomingWebhook(Mockito.eq(HOOK), isA(Payload.class));
     }
 
     @Test

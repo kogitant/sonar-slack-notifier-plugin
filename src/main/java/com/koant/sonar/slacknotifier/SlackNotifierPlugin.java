@@ -91,7 +91,7 @@ public class SlackNotifierPlugin implements Plugin {
             .type(PropertyType.BOOLEAN)
             .category(CATEGORY)
             .subCategory(SUBCATEGORY)
-            .index(3)
+            .index(6)
             .build());
         extensions.add(PropertyDefinition.builder(DEFAULT_CHANNEL.property())
             .name("Default Slack channel")
@@ -100,7 +100,7 @@ public class SlackNotifierPlugin implements Plugin {
             .type(PropertyType.STRING)
             .category(CATEGORY)
             .subCategory(SUBCATEGORY)
-            .index(4)
+            .index(7)
             .build());
         extensions.add(
             PropertyDefinition.builder(CONFIG.property())
@@ -109,14 +109,14 @@ public class SlackNotifierPlugin implements Plugin {
                         "If a slack channel is not configured for a project, no slack message will be sent for project.")
                 .category(CATEGORY)
                 .subCategory(SUBCATEGORY)
-                .index(5)
+                .index(8)
                 .fields(
                     PropertyFieldDefinition.build(PROJECT_HOOK.property())
                         .name("Project Hook")
                         .description("https://api.slack.com/incoming-webhooks")
                         .type(PropertyType.STRING)
                         .build(),
-                    PropertyFieldDefinition.build(PROJECT.property())
+                    PropertyFieldDefinition.build(PROJECT_REGEXP.property())
                         .name("Project Key")
                         .description("Ex: com.koant.sonar.slack:sonar-slack-notifier-plugin, can use '*' wildcard at the end")
                         .description("Regex that will match the Project Key of the project. Ex: com\\..* will match all projects that start with 'com.'")

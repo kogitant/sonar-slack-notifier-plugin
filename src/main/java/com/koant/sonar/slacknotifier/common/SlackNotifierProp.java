@@ -66,7 +66,7 @@ public enum SlackNotifierProp {
     /**
      * @see SlackNotifierProp#CONFIG
      */
-    PROJECT("project"),
+    PROJECT_REGEXP("project"),
 
     /**
      * @see SlackNotifierProp#CONFIG

@@ -18,14 +18,15 @@ import java.util.stream.Collectors;
 
 /**
  * Abstract base component for Slack notifying Sonar extensions.
- * Concrete implementations must call com.koant.sonar.slacknotifier.common.component.AbstractSlackNotifyingComponent#refreshSettings() in the beginning of actual execution.
+ * Concrete implementations must call com.koant.sonar.slacknotifier.common.component
+ * .AbstractSlackNotifyingComponent#refreshSettings() in the beginning of actual execution.
  */
 public abstract class AbstractSlackNotifyingComponent {
 
     private static final Logger LOG = Loggers.get(AbstractSlackNotifyingComponent.class);
 
-    private final Configuration settings;
-    private Map<String, ProjectConfig> projectConfigMap = Collections.emptyMap();
+    private final Configuration              settings;
+    private       Map<String, ProjectConfig> projectConfigMap = Collections.emptyMap();
 
     public AbstractSlackNotifyingComponent(Configuration settings) {
         this.settings = settings;
@@ -38,8 +39,10 @@ public abstract class AbstractSlackNotifyingComponent {
      * <pre>
      * 1) the Settings object is constructor injected to this class.
      * 2) the values reflected by the Settings object reflect latest settings configured
-     * 3) but the constructor of this class is called only once, and after that the class is never instantiated again (the same instance is reused)
-     * 4) thus when the instance is used to perform something, we must refresh the projectConfigMap when the execution starts
+     * 3) but the constructor of this class is called only once, and after that the class is never instantiated again
+     * (the same instance is reused)
+     * 4) thus when the instance is used to perform something, we must refresh the projectConfigMap when the
+     * execution starts
      * </pre>
      */
     protected void refreshSettings() {
@@ -49,8 +52,8 @@ public abstract class AbstractSlackNotifyingComponent {
 
     private void refreshProjectConfigs() {
         LOG.info("Refreshing project configs");
-        Set<ProjectConfig> oldValues =  this.projectConfigMap.values().stream().
-            map(ProjectConfig::new).collect(Collectors.toSet());
+        Set<ProjectConfig> oldValues = this.projectConfigMap.values().stream().
+            map(ProjectConfigBuilder::cloneProjectConfig).collect(Collectors.toSet());
         this.projectConfigMap = buildProjectConfigByProjectKeyMap(this.settings);
         Set<ProjectConfig> newValues = new HashSet<>(this.projectConfigMap.values());
         if (!oldValues.equals(newValues)) {
@@ -74,10 +77,15 @@ public abstract class AbstractSlackNotifyingComponent {
         return defaultChannel.orElseThrow(() -> new IllegalStateException("Default property not found"));
     }
 
+    protected String getDefaultHook() {
+        final Optional<String> defaultHook = settings.get(SlackNotifierProp.HOOK.property());
+        return defaultHook.orElse(null);
+    }
+
 
     protected boolean isPluginEnabled() {
-        return settings.getBoolean(SlackNotifierProp.ENABLED.property()).orElseThrow(()
-            -> new IllegalStateException("Enabled property not found"));
+        return settings.getBoolean(SlackNotifierProp.ENABLED.property())
+                       .orElseThrow(()-> new IllegalStateException("Enabled property not found"));
     }
 
     /**
@@ -107,24 +115,25 @@ public abstract class AbstractSlackNotifyingComponent {
 
     protected Optional<ProjectConfig> getProjectConfig(String projectKey) {
         List<ProjectConfig> projectConfigs = projectConfigMap.keySet()
-                .stream()
-                .filter(projectKey::matches)
-                .map(projectConfigMap::get)
-                .collect(Collectors.toList());
+                                                             .stream()
+                                                             .filter(projectKey::matches)
+                                                             .map(projectConfigMap::get)
+                                                             .collect(Collectors.toList());
         // Not configured at all
         if (projectConfigs.isEmpty()) {
             LOG.info("Could not find config for project [{}] in [{}]", projectKey, projectConfigMap);
 
             LOG.info("Building the default project config.");
-            final ProjectConfig projectConfig = new ProjectConfig(
-                projectKey,
-                getDefaultChannel(),
-                getSlackUser(),
-                false);
+            final ProjectConfig projectConfig = new ProjectConfigBuilder().setProjectHook(getDefaultHook())
+                                                                          .setProjectKeyOrRegExp(projectKey)
+                                                                          .setSlackChannel(getDefaultChannel())
+                                                                          .setNotify(getSlackUser())
+                                                                          .setQgFailOnly(false)
+                                                                          .build();
             return Optional.of(projectConfig);
         }
 
-        if(projectConfigs.size() > 1) {
+        if (projectConfigs.size() > 1) {
             LOG.warn("More than 1 project key was matched. Using first one: {}", projectConfigs.get(0).getProjectKey());
         }
         return Optional.of(projectConfigs.get(0));
@@ -135,13 +144,19 @@ public abstract class AbstractSlackNotifyingComponent {
         String[] projectConfigIndexes = settings.getStringArray(SlackNotifierProp.CONFIG.property());
         LOG.info("SlackNotifierProp.CONFIG=[{}]", (Object) projectConfigIndexes);
         for (String projectConfigIndex : projectConfigIndexes) {
-            String projectKeyProperty = SlackNotifierProp.CONFIG.property() + "." + projectConfigIndex + "." + SlackNotifierProp.PROJECT.property();
+            String projectKeyProperty = SlackNotifierProp.CONFIG
+                .property() + "." + projectConfigIndex + "." + SlackNotifierProp.PROJECT_REGEXP
+                .property();
             Optional<String> projectKey = settings.get(projectKeyProperty);
             if (!projectKey.isPresent()) {
-                throw MessageException.of("Slack notifier configuration is corrupted. At least one project specific parameter has no project key. " +
-                        "Contact your administrator to update this configuration in the global administration section of SonarQube.");
+                throw MessageException.of(
+                    "Slack notifier configuration is corrupted. At least one project specific parameter has no " +
+                        "project key. " +
+                        "Contact your administrator to update this configuration in the global administration section" +
+                        " of SonarQube.");
             }
-            ProjectConfig value = ProjectConfig.create(settings, projectConfigIndex);
+            ProjectConfig value = new ProjectConfigBuilder().withConfiguration(settings, SlackNotifierProp.CONFIG
+                .property() + "." + projectConfigIndex + ".").build();
             LOG.info("Found project configuration [{}]", value);
             map.put(projectKey.get(), value);
         }
@@ -168,12 +183,14 @@ public abstract class AbstractSlackNotifyingComponent {
     protected boolean shouldSkipSendingNotification(ProjectConfig projectConfig, QualityGate qualityGate) {
         // Disabled due to missing channel value
         if (projectConfig.getSlackChannel() == null ||
-                "".equals(projectConfig.getSlackChannel().trim())) {
+            "".equals(projectConfig.getSlackChannel().trim())) {
             LOG.info("Slack channel for project [{}] is blank, notifications disabled", projectConfig.getProjectKey());
             return true;
         }
-        if (projectConfig.isQgFailOnly() && qualityGate != null && QualityGate.Status.OK.equals(qualityGate.getStatus())) {
-            LOG.info("Project [{}] set up to send notification on failed Quality Gate, but was: {}", projectConfig.getProjectKey(), qualityGate.getStatus().name());
+        if (projectConfig.isQgFailOnly() && qualityGate != null && QualityGate.Status.OK.equals(
+            qualityGate.getStatus())) {
+            LOG.info("Project [{}] set up to send notification on failed Quality Gate, but was: {}",
+                     projectConfig.getProjectKey(), qualityGate.getStatus().name());
             return true;
         }
         return false;

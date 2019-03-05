@@ -17,8 +17,8 @@ import java.util.Date;
 
 public class Analyses {
 
-    public static final String PROJECT_KEY = "project:key";
-    private static final String PROJECT_NAME = "Project Name";
+    public static final String PROJECT_KEY = "my-sonar-project-key";
+    private static final String PROJECT_NAME = "Sonar Project Name";
     private static final Project PROJECT = PostProjectAnalysisTaskTester.newProjectBuilder()
             .setUuid("uuid")
             .setKey(PROJECT_KEY)
