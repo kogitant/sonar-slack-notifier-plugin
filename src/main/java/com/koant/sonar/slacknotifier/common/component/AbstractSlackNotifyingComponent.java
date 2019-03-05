@@ -2,12 +2,18 @@ package com.koant.sonar.slacknotifier.common.component;
 
 import com.koant.sonar.slacknotifier.common.SlackNotifierProp;
 import org.sonar.api.ce.posttask.QualityGate;
-import org.sonar.api.config.Settings;
+import org.sonar.api.config.Configuration;
 import org.sonar.api.utils.MessageException;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -18,10 +24,10 @@ public abstract class AbstractSlackNotifyingComponent {
 
     private static final Logger LOG = Loggers.get(AbstractSlackNotifyingComponent.class);
 
-    private final Settings settings;
+    private final Configuration settings;
     private Map<String, ProjectConfig> projectConfigMap = Collections.emptyMap();
 
-    public AbstractSlackNotifyingComponent(Settings settings) {
+    public AbstractSlackNotifyingComponent(Configuration settings) {
         this.settings = settings;
         LOG.info("Constructor called, project slack channel config map constructed from general settings");
     }
@@ -43,54 +49,79 @@ public abstract class AbstractSlackNotifyingComponent {
 
     private void refreshProjectConfigs() {
         LOG.info("Refreshing project configs");
-        Set<ProjectConfig> oldValues = new HashSet<>();
-        this.projectConfigMap.values().forEach(c -> oldValues.add(new ProjectConfig(c)));
-        this.projectConfigMap = buildProjectConfigByProjectKeyMap(settings);
+        Set<ProjectConfig> oldValues =  this.projectConfigMap.values().stream().
+            map(ProjectConfig::new).collect(Collectors.toSet());
+        this.projectConfigMap = buildProjectConfigByProjectKeyMap(this.settings);
         Set<ProjectConfig> newValues = new HashSet<>(this.projectConfigMap.values());
         if (!oldValues.equals(newValues)) {
             LOG.info("Old configs [{}] --> new configs [{}]", oldValues, newValues);
         }
     }
 
-    protected String getSlackIncomingWebhookUrl() {
-        return settings.getString(SlackNotifierProp.HOOK.property());
+    protected String getSlackUser() {
+
+        Optional<String> user = settings.get(SlackNotifierProp.USER.property());
+        return user.orElseThrow(() -> new IllegalStateException("User property not found"));
     }
 
-    protected String getSlackUser() {
-        return settings.getString(SlackNotifierProp.USER.property());
+    protected String getIconUrl() {
+        final Optional<String> icon = settings.get(SlackNotifierProp.ICON_URL.property());
+        return icon.orElse(null);
     }
+
+    protected String getDefaultChannel() {
+        final Optional<String> defaultChannel = settings.get(SlackNotifierProp.DEFAULT_CHANNEL.property());
+        return defaultChannel.orElseThrow(() -> new IllegalStateException("Default property not found"));
+    }
+
 
     protected boolean isPluginEnabled() {
-        return settings.getBoolean(SlackNotifierProp.ENABLED.property());
+        return settings.getBoolean(SlackNotifierProp.ENABLED.property()).orElseThrow(()
+            -> new IllegalStateException("Enabled property not found"));
+    }
+
+    /**
+     * @return value for INCLUDE_BRANCH property, defaults to false if for some reason not set.
+     */
+    protected boolean isBranchEnabled() {
+
+        return settings.getBoolean(SlackNotifierProp.INCLUDE_BRANCH.property()).orElse(false);
     }
 
     /**
      * Returns the sonar server url, with a trailing /
      *
-     * @return
+     * @return the sonar server URL
      */
     protected String getSonarServerUrl() {
-        String u = settings.getString("sonar.core.serverBaseURL");
-        if (u == null) {
-            return null;
+        Optional<String> urlOptional = settings.get("sonar.core.serverBaseURL");
+        if (!urlOptional.isPresent()) {
+            return "http://pleaseDefineSonarQubeUrl/";
         }
-        if (u.endsWith("/")) {
-            return u;
+        String url = urlOptional.get();
+        if (url.endsWith("/")) {
+            return url;
         }
-        return u + "/";
+        return url + "/";
     }
 
     protected Optional<ProjectConfig> getProjectConfig(String projectKey) {
         List<ProjectConfig> projectConfigs = projectConfigMap.keySet()
                 .stream()
-                .filter(key -> key.endsWith("*") ? projectKey.startsWith(key.substring(0, key.length() - 1))
-                        : key.equals(projectKey))
+                .filter(projectKey::matches)
                 .map(projectConfigMap::get)
                 .collect(Collectors.toList());
         // Not configured at all
         if (projectConfigs.isEmpty()) {
             LOG.info("Could not find config for project [{}] in [{}]", projectKey, projectConfigMap);
-            return Optional.empty();
+
+            LOG.info("Building the default project config.");
+            final ProjectConfig projectConfig = new ProjectConfig(
+                projectKey,
+                getDefaultChannel(),
+                getSlackUser(),
+                false);
+            return Optional.of(projectConfig);
         }
 
         if(projectConfigs.size() > 1) {
@@ -99,20 +130,20 @@ public abstract class AbstractSlackNotifyingComponent {
         return Optional.of(projectConfigs.get(0));
     }
 
-    private static Map<String, ProjectConfig> buildProjectConfigByProjectKeyMap(Settings settings) {
+    private static Map<String, ProjectConfig> buildProjectConfigByProjectKeyMap(Configuration settings) {
         Map<String, ProjectConfig> map = new HashMap<>();
         String[] projectConfigIndexes = settings.getStringArray(SlackNotifierProp.CONFIG.property());
-        LOG.info("SlackNotifierProp.CONFIG=[{}]", projectConfigIndexes);
+        LOG.info("SlackNotifierProp.CONFIG=[{}]", (Object) projectConfigIndexes);
         for (String projectConfigIndex : projectConfigIndexes) {
             String projectKeyProperty = SlackNotifierProp.CONFIG.property() + "." + projectConfigIndex + "." + SlackNotifierProp.PROJECT.property();
-            String projectKey = settings.getString(projectKeyProperty);
-            if (projectKey == null) {
+            Optional<String> projectKey = settings.get(projectKeyProperty);
+            if (!projectKey.isPresent()) {
                 throw MessageException.of("Slack notifier configuration is corrupted. At least one project specific parameter has no project key. " +
                         "Contact your administrator to update this configuration in the global administration section of SonarQube.");
             }
             ProjectConfig value = ProjectConfig.create(settings, projectConfigIndex);
             LOG.info("Found project configuration [{}]", value);
-            map.put(projectKey, value);
+            map.put(projectKey.get(), value);
         }
         return map;
     }
@@ -121,13 +152,17 @@ public abstract class AbstractSlackNotifyingComponent {
         Map<String, String> pluginSettings = new HashMap<>();
         mapSetting(pluginSettings, SlackNotifierProp.HOOK);
         mapSetting(pluginSettings, SlackNotifierProp.USER);
+        mapSetting(pluginSettings, SlackNotifierProp.PROXY_IP);
+        mapSetting(pluginSettings, SlackNotifierProp.PROXY_PORT);
+        mapSetting(pluginSettings, SlackNotifierProp.PROXY_PROTOCOL);
         mapSetting(pluginSettings, SlackNotifierProp.ENABLED);
         mapSetting(pluginSettings, SlackNotifierProp.CONFIG);
+        mapSetting(pluginSettings, SlackNotifierProp.INCLUDE_BRANCH);
         return pluginSettings.toString() + "; project specific channel config: " + projectConfigMap;
     }
 
     private void mapSetting(Map<String, String> pluginSettings, SlackNotifierProp key) {
-        pluginSettings.put(key.name(), settings.getString(key.property()));
+        pluginSettings.put(key.name(), settings.get(key.property()).orElse(""));
     }
 
     protected boolean shouldSkipSendingNotification(ProjectConfig projectConfig, QualityGate qualityGate) {

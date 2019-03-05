@@ -1,13 +1,16 @@
 package com.koant.sonar.slacknotifier.extension.task;
 
-import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.webhook.Payload;
-import com.github.seratch.jslack.api.webhook.WebhookResponse;
+import com.github.seratch.jslack.common.json.GsonFactory;
+import com.google.gson.Gson;
 import com.koant.sonar.slacknotifier.common.component.AbstractSlackNotifyingComponent;
 import com.koant.sonar.slacknotifier.common.component.ProjectConfig;
+import okhttp3.*;
+import org.assertj.core.util.VisibleForTesting;
 import org.sonar.api.ce.posttask.PostProjectAnalysisTask;
-import org.sonar.api.config.Settings;
+import org.sonar.api.config.Configuration;
 import org.sonar.api.i18n.I18n;
+import org.sonar.api.internal.apachecommons.lang.StringUtils;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
 
@@ -16,27 +19,36 @@ import java.util.Optional;
 
 /**
  * Created by 616286 on 3.6.2016.
- * Modified by poznachowski
+ * Modified by gmilosavljevic
  */
 public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponent implements PostProjectAnalysisTask {
 
     private static final Logger LOG = Loggers.get(SlackPostProjectAnalysisTask.class);
 
     private final I18n i18n;
-    private final Slack slackClient;
+    private final SlackHttpClient httpClient;
 
-    public SlackPostProjectAnalysisTask(Settings settings, I18n i18n) {
-        this(Slack.getInstance(), settings, i18n);
+    /**
+     * Default constructor invoked by SonarQube.
+     * @param settings
+     * @param i18n
+     */
+    public SlackPostProjectAnalysisTask(Configuration settings, I18n i18n) {
+        super(settings);
+        this.i18n = i18n;
+        this.httpClient = new SlackHttpClient(settings);
+
     }
 
-    public SlackPostProjectAnalysisTask(Slack slackClient, Settings settings, I18n i18n) {
+    @VisibleForTesting
+    SlackPostProjectAnalysisTask(SlackHttpClient httpClient, Configuration settings, I18n i18n) {
         super(settings);
-        this.slackClient = slackClient;
         this.i18n = i18n;
+        this.httpClient = httpClient;
     }
 
     @Override
-    public void finished(ProjectAnalysis analysis) {
+    public void finished(final ProjectAnalysis analysis) {
         refreshSettings();
         if (!isPluginEnabled()) {
             LOG.info("Slack notifier plugin disabled, skipping. Settings are [{}]", logRelevantSettings());
@@ -45,6 +57,7 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
         LOG.info("Analysis ScannerContext: [{}]", analysis.getScannerContext().getProperties());
         String projectKey = analysis.getProject().getKey();
 
+        LOG.info("Looking for the configuration of the project {}", projectKey);
         Optional<ProjectConfig> projectConfigOptional = getProjectConfig(projectKey);
         if (!projectConfigOptional.isPresent()) {
             return;
@@ -55,22 +68,34 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
             return;
         }
 
+        String hook = projectConfig.getProjectHook();
+        if (hook != null) {
+            hook = hook.trim();
+        }
+        LOG.info("Hook is: " + hook);
+        if (hook == null || hook.isEmpty()) {
+            hook = getSlackIncomingWebhookUrl();
+        }
+
         LOG.info("Slack notification will be sent: " + analysis.toString());
 
         Payload payload = ProjectAnalysisPayloadBuilder.of(analysis)
-                .i18n(i18n)
-                .projectConfig(projectConfig)
-                .projectUrl(projectUrl(projectKey))
-                .username(getSlackUser())
-                .build();
+            .i18n(i18n)
+            .projectConfig(projectConfig)
+            .projectUrl(projectUrl(projectKey))
+            .includeBranch(isBranchEnabled())
+            .username(getSlackUser())
+            .iconUrl(getIconUrl())
+            .build();
 
         try {
-            // See https://github.com/seratch/jslack
-            WebhookResponse response = slackClient.send(getSlackIncomingWebhookUrl(), payload);
-            if (!Integer.valueOf(200).equals(response.getCode())) {
-                LOG.error("Failed to post to slack, response is [{}]", response);
+
+            if (this.httpClient.invokeSlackIncomingWebhook(payload)) {
+                LOG.info("Slack webhook invoked with success.");
+            } else {
+                throw new IllegalArgumentException("The Slack response has failed");
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOG.error("Failed to send slack message", e);
         }
     }
@@ -78,6 +103,4 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
     private String projectUrl(String projectKey) {
         return getSonarServerUrl() + "dashboard?id=" + projectKey;
     }
-
-
 }

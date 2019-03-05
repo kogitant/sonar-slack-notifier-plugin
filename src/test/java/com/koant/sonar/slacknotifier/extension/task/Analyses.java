@@ -1,11 +1,19 @@
 package com.koant.sonar.slacknotifier.extension.task;
 
-import org.sonar.api.ce.posttask.*;
+import static org.sonar.api.ce.posttask.PostProjectAnalysisTaskTester.newCeTaskBuilder;
+import static org.sonar.api.ce.posttask.PostProjectAnalysisTaskTester.newConditionBuilder;
+import static org.sonar.api.ce.posttask.PostProjectAnalysisTaskTester.newQualityGateBuilder;
+import static org.sonar.api.ce.posttask.PostProjectAnalysisTaskTester.newScannerContextBuilder;
+
+import org.sonar.api.ce.posttask.Branch;
+import org.sonar.api.ce.posttask.CeTask;
+import org.sonar.api.ce.posttask.PostProjectAnalysisTask;
+import org.sonar.api.ce.posttask.PostProjectAnalysisTaskTester;
+import org.sonar.api.ce.posttask.Project;
+import org.sonar.api.ce.posttask.QualityGate;
 import org.sonar.api.measures.CoreMetrics;
 
 import java.util.Date;
-
-import static org.sonar.api.ce.posttask.PostProjectAnalysisTaskTester.*;
 
 public class Analyses {
 
@@ -25,8 +33,7 @@ public class Analyses {
         PostProjectAnalysisTaskTester.of(analysisTask)
                 .withCeTask(CE_TASK)
                 .withProject(PROJECT)
-                .withScannerContext(newScannerContextBuilder()
-                .build())
+                .withScannerContext(newScannerContextBuilder().build())
                 .at(new Date())
                 .withQualityGate(
                         newQualityGateBuilder()
@@ -43,6 +50,7 @@ public class Analyses {
                                 .build())
                 .execute();
     }
+
 
     public static void simpleDifferentKey(PostProjectAnalysisTask analysisTask) {
         PostProjectAnalysisTaskTester.of(analysisTask)
@@ -146,5 +154,15 @@ public class Analyses {
                 .withProject(PROJECT)
                 .at(new Date())
                 .execute();
+    }
+
+    public static void withBranch(PostProjectAnalysisTask analysisTask, Branch branch) {
+        PostProjectAnalysisTaskTester.of(analysisTask)
+            .withCeTask(CE_TASK)
+            .withProject(PROJECT)
+            .withBranch(branch)
+            .at(new Date())
+            .withScannerContext(newScannerContextBuilder().build())
+            .execute();
     }
 }
