@@ -32,6 +32,7 @@ Under it you can find the CKS Slack Notifier plugin configurations:
 ![](documentation/screenshots/administration_cks_slack_notifier_settings.png?raw=true)
 
 In the above example there is a Project Key to Slack Channel configuration for an example project.
+You can override the globally  defined web-hook, if you like. Example use case: You want a project to notify a different Slack team.  
 The project key of any SonarQube project can be found in the project page (bottom right corner):
 ![](documentation/screenshots/project_key_from_project_page.png?raw=true)
 

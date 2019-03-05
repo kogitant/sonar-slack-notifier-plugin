@@ -67,7 +67,7 @@ public class ProjectAnalysisPayloadBuilderTest {
     @Test
     public void testPayloadBuilder() {
         Analyses.qualityGateOk4Conditions(postProjectAnalysisTask);
-        ProjectConfig projectConfig = new ProjectConfig("key", "#channel", "here", false);
+        ProjectConfig projectConfig = new ProjectConfig("hook", "key", "#channel", false);
         Payload payload = ProjectAnalysisPayloadBuilder.of(postProjectAnalysisTask.getProjectAnalysis())
                 .projectConfig(projectConfig)
                 .i18n(i18n)
@@ -117,7 +117,7 @@ public class ProjectAnalysisPayloadBuilderTest {
     @Test
     public void shouldShowOnlyExceededConditionsIfProjectConfigReportOnlyOnFailedQualityGateWay() {
         Analyses.qualityGateError2Of3ConditionsFailed(postProjectAnalysisTask);
-        ProjectConfig projectConfig = new ProjectConfig("key", "#channel", "here", QG_FAIL_ONLY);
+        ProjectConfig projectConfig = new ProjectConfig("hook", "key", "#channel", QG_FAIL_ONLY);
         Payload payload = ProjectAnalysisPayloadBuilder.of(postProjectAnalysisTask.getProjectAnalysis())
                 .projectConfig(projectConfig)
                 .i18n(i18n)
@@ -136,7 +136,7 @@ public class ProjectAnalysisPayloadBuilderTest {
     @Test
     public void buildPayloadWithoutQualityGateWay() {
         Analyses.noQualityGate(postProjectAnalysisTask);
-        ProjectConfig projectConfig = new ProjectConfig("key", "#channel", "here", false);
+        ProjectConfig projectConfig = new ProjectConfig("hook", "key", "#channel", false);
         Payload payload = ProjectAnalysisPayloadBuilder.of(postProjectAnalysisTask.getProjectAnalysis())
                 .projectConfig(projectConfig)
                 .i18n(i18n)
