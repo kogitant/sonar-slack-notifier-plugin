@@ -9,7 +9,7 @@ The plugin must be placed in *SONAR_HOME/extensions/plugins* directory and Sonar
 
 ## Using latest release
 You can find the latest release from https://github.com/kogitant/sonar-slack-notifier-plugin/releases/ page.
-Download the 
+Download the jar file.
 
 ## From sources
 To build the plugin simply run
