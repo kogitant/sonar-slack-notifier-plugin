@@ -58,7 +58,7 @@ public class SlackNotifierPluginTest {
         Set<Integer> indexes = extensions.stream().filter(PropertyDefinition.class::isInstance)
             .map(PropertyDefinition.class::cast).map(PropertyDefinition::index).
                 collect(Collectors.toSet());
-        Assert.assertEquals(6, indexes.size());
+        Assert.assertEquals(9, indexes.size());
 
     }
 

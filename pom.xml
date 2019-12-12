@@ -41,19 +41,19 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.8.1</version>
+      <version>3.9</version>
     </dependency>
 
     <!-- Dependencies of this plugin, not provided by SonarQube -->
     <dependency>
       <groupId>com.github.seratch</groupId>
       <artifactId>jslack</artifactId>
-      <version>1.1.7</version>
+      <version>3.2.5</version>
     </dependency>
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>okhttp</artifactId>
-      <version>3.7.0</version>
+      <version>4.2.2</version>
     </dependency>
 
 
@@ -67,12 +67,12 @@
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>3.12.0</version>
+      <version>3.14.0</version>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <version>2.0.2-beta</version>
+      <artifactId>mockito-core</artifactId>
+      <version>3.2.0</version>
       <scope>test</scope>
     </dependency>
 
