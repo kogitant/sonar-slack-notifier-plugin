@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.koant.sonar.slack</groupId>
   <artifactId>cks-slack-notifier</artifactId>
-  <version>2.4</version>
+  <version>2.6.0</version>
   <packaging>sonar-plugin</packaging>
 
   <name>CKS Slack Notifier Plugin</name>
