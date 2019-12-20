@@ -4,6 +4,7 @@ import com.github.seratch.jslack.api.webhook.Payload;
 import com.koant.sonar.slacknotifier.common.SlackNotifierProp;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -18,7 +19,6 @@ import java.util.Locale;
 
 import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.*;
 import static com.koant.sonar.slacknotifier.extension.task.Analyses.PROJECT_KEY;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**
@@ -41,55 +41,55 @@ public class SlackPostProjectAnalysisTaskTest {
 
     @Before
     public void before() throws IOException {
-        postProjectAnalysisTask = new CaptorPostProjectAnalysisTask();
-        settings = new MapSettings();
-        settings.setProperty(ENABLED.property(), "true");
-        settings.setProperty(SlackNotifierProp.HOOK.property(), HOOK);
-        settings.setProperty(CHANNEL.property(), "channel");
-        settings.setProperty(USER.property(), "user");
-        settings.setProperty(ICON_URL.property(), "");
-        settings.setProperty(PROXY_IP.property(), "127.0.0.1");
-        settings.setProperty(PROXY_PORT.property(), "8080");
-        settings.setProperty(PROXY_PROTOCOL.property(), "http");
-        settings.setProperty(DEFAULT_CHANNEL.property(), "general");
-        settings.setProperty(CONFIG.property(), PROJECT_KEY);
-        settings.setProperty(CONFIG.property() + "." + PROJECT_KEY + "." + PROJECT_REGEXP.property(), PROJECT_KEY);
-        settings.setProperty(CONFIG.property() + "." + PROJECT_KEY + "." + CHANNEL.property(), "#random");
-        settings.setProperty(CONFIG.property() + "." + PROJECT_KEY + "." + QG_FAIL_ONLY.property(), "false");
-        settings.setProperty("sonar.core.serverBaseURL", "http://your.sonar.com/");
-        httpClient = mock(SlackHttpClient.class);
-        i18n = mock(I18n.class);
-        when(i18n.message(Matchers.any(Locale.class), anyString(), anyString())).thenAnswer(new Answer<String>() {
+        this.postProjectAnalysisTask = new CaptorPostProjectAnalysisTask();
+        this.settings = new MapSettings();
+        this.settings.setProperty(ENABLED.property(), "true");
+        this.settings.setProperty(SlackNotifierProp.HOOK.property(), HOOK);
+        this.settings.setProperty(CHANNEL.property(), "channel");
+        this.settings.setProperty(USER.property(), "user");
+        this.settings.setProperty(ICON_URL.property(), "");
+        this.settings.setProperty(PROXY_IP.property(), "127.0.0.1");
+        this.settings.setProperty(PROXY_PORT.property(), "8080");
+        this.settings.setProperty(PROXY_PROTOCOL.property(), "http");
+        this.settings.setProperty(DEFAULT_CHANNEL.property(), "general");
+        this.settings.setProperty(CONFIG.property(), PROJECT_KEY);
+        this.settings.setProperty(CONFIG.property() + "." + PROJECT_KEY + "." + PROJECT_REGEXP.property(), PROJECT_KEY);
+        this.settings.setProperty(CONFIG.property() + "." + PROJECT_KEY + "." + CHANNEL.property(), "#random");
+        this.settings.setProperty(CONFIG.property() + "." + PROJECT_KEY + "." + QG_FAIL_ONLY.property(), "false");
+        this.settings.setProperty("sonar.core.serverBaseURL", "http://your.sonar.com/");
+        this.httpClient = mock(SlackHttpClient.class);
+        this.i18n = mock(I18n.class);
+        when(this.i18n.message(ArgumentMatchers.any(Locale.class), anyString(), anyString())).thenAnswer(new Answer<String>() {
             @Override
-            public String answer(InvocationOnMock invocation) throws Throwable {
+            public String answer(final InvocationOnMock invocation) throws Throwable {
                 return (String) invocation.getArguments()[2];
             }
         });
 
-        task = new SlackPostProjectAnalysisTask(httpClient, new ConfigurationBridge(settings), i18n);
+        this.task = new SlackPostProjectAnalysisTask(this.httpClient, new ConfigurationBridge(this.settings), this.i18n);
     }
 
     @Test
     public void shouldCall() throws Exception {
-        Analyses.simple(postProjectAnalysisTask);
-        when(httpClient.invokeSlackIncomingWebhook(Mockito.eq(HOOK), isA(Payload.class))).thenReturn(true);
-        task.finished(postProjectAnalysisTask.getProjectAnalysis());
-        Mockito.verify(httpClient, times(1)).invokeSlackIncomingWebhook(Mockito.eq(HOOK), isA(Payload.class));
+        Analyses.simple(this.postProjectAnalysisTask);
+        when(this.httpClient.invokeSlackIncomingWebhook(ArgumentMatchers.eq(HOOK), isA(Payload.class))).thenReturn(true);
+        this.task.finished(this.postProjectAnalysisTask.getProjectAnalysis());
+        verify(this.httpClient, times(1)).invokeSlackIncomingWebhook(ArgumentMatchers.eq(HOOK), isA(Payload.class));
     }
 
     @Test
     public void shouldSkipIfPluginDisabled() throws Exception {
-        settings.setProperty(ENABLED.property(), "false");
-        Analyses.simple(postProjectAnalysisTask);
-        task.finished(postProjectAnalysisTask.getProjectAnalysis());
-        Mockito.verifyZeroInteractions(httpClient);
+        this.settings.setProperty(ENABLED.property(), "false");
+        Analyses.simple(this.postProjectAnalysisTask);
+        this.task.finished(this.postProjectAnalysisTask.getProjectAnalysis());
+        verifyNoInteractions(this.httpClient);
     }
 
     @Test
     public void shouldSkipIfReportFailedQualityGateButOk() throws Exception {
-        settings.setProperty(CONFIG.property() + "." + PROJECT_KEY + "." + QG_FAIL_ONLY.property(), "true");
-        Analyses.simple(postProjectAnalysisTask);
-        task.finished(postProjectAnalysisTask.getProjectAnalysis());
-        Mockito.verifyZeroInteractions(httpClient);
+        this.settings.setProperty(CONFIG.property() + "." + PROJECT_KEY + "." + QG_FAIL_ONLY.property(), "true");
+        Analyses.simple(this.postProjectAnalysisTask);
+        this.task.finished(this.postProjectAnalysisTask.getProjectAnalysis());
+        verifyNoInteractions(this.httpClient);
     }
 }

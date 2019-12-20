@@ -1,7 +1,11 @@
 # Warning
 
 This project is a fork of the original work from https://github.com/kogitant/sonar-slack-notifier-plugin.
-I made modifications to keep it working for the latest versions of SonarQube (7.2, 7.3) 
+I made modifications to keep it working for the latest versions of SonarQube.
+
+## Pre-requisites
+
+The actual version is compiled for *SonarQube v8.0 and JDK 11*.
 
 # CKS Sonar Slack Notifier Plugin
 SonarQube plugin for sending notifications to Slack

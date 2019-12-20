@@ -83,15 +83,15 @@ public enum SlackNotifierProp {
      */
     QG_FAIL_ONLY("qg");
 
-    private String property;
+    private final String property;
 
-    SlackNotifierProp(java.lang.String property) {
+    SlackNotifierProp(final java.lang.String property) {
 
         this.property = property;
     }
 
     public String property() {
 
-        return property;
+        return this.property;
     }
 }

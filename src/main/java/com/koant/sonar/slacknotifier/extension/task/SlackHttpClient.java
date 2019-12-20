@@ -23,6 +23,7 @@ import com.koant.sonar.slacknotifier.common.SlackNotifierProp;
 import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.util.Strings;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.api.config.Configuration;
@@ -34,74 +35,82 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public class SlackHttpClient {
+    public static final String CONTENT_TYPE = "content-type";
+    public static final String APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
     private static final Logger LOG = LoggerFactory.getLogger(SlackHttpClient.class);
     private final OkHttpClient httpClient;
-    private Configuration settings;
+    private final Configuration settings;
 
+    /**
+     * Initializes the Slack HTTP Client.
+     *
+     * @param settings
+     */
     public SlackHttpClient(final Configuration settings) {
         this.settings = settings;
         final OkHttpClient.Builder builder = new OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS)
             .writeTimeout(10, TimeUnit.SECONDS);
-        final Proxy httpProxy = getHttpProxy();
-        if (httpProxy == null) {
-            builder.proxy(httpProxy);
-        }
-        this.httpClient = builder.proxy(getHttpProxy())
-            .build();
+        this.declareProxyIfNecessary(builder);
+        httpClient = builder.build();
 
 
     }
 
+    private void declareProxyIfNecessary(final OkHttpClient.Builder builder) {
+        final Proxy httpProxy = this.getHttpProxy();
+        if (httpProxy == null) {
+            builder.proxy(httpProxy);
+        }
+    }
+
     private Proxy getHttpProxy() {
-        final Proxy.Type proxyProtocol = getProxyProtocol();
+        final Proxy.Type proxyProtocol = this.getProxyProtocol();
         if (proxyProtocol == null) return null;
 
-        if (Strings.isNullOrEmpty(getProxyIP())) {
+        final String proxyIP = this.getProxyIP();
+        if (Strings.isNullOrEmpty(proxyIP)) {
             return null;
         }
 
         return new Proxy(
             proxyProtocol,
             new InetSocketAddress(
-                getProxyIP(),
-                getProxyPort()
+                proxyIP,
+                this.getProxyPort()
             )
         );
     }
 
     private Proxy.Type getProxyProtocol() {
 
-        final Optional<String> proxyProtocol = settings.get(SlackNotifierProp.PROXY_PROTOCOL.property());
+        final Optional<String> proxyProtocol = this.settings.get(SlackNotifierProp.PROXY_PROTOCOL.property());
         return proxyProtocol.map(Proxy.Type::valueOf).orElseThrow(() -> new IllegalStateException("Proxy type property not found"));
 
     }
 
     private String getProxyIP() {
 
-        final Optional<String> proxyIp = settings.get(SlackNotifierProp.PROXY_IP.property());
+        final Optional<String> proxyIp = this.settings.get(SlackNotifierProp.PROXY_IP.property());
         return proxyIp.orElse(null);
     }
 
     private int getProxyPort() {
-        final Optional<Integer> proxyPort = settings.getInt(SlackNotifierProp.PROXY_PORT.property());
+        final Optional<Integer> proxyPort = this.settings.getInt(SlackNotifierProp.PROXY_PORT.property());
         return proxyPort.orElseThrow(() -> new IllegalStateException("Proxy port property not found"));
     }
 
     boolean invokeSlackIncomingWebhook(final String projectCustomHook, final Payload payload) throws IOException {
 
-        Gson gson = GsonFactory.createSnakeCase();
-        String payloadJson = gson.toJson(payload);
+        final Gson gson = GsonFactory.createSnakeCase();
+        final String payloadJson = gson.toJson(payload);
 
-        String slackIncomingWebhookUrl = StringUtils.isEmpty(projectCustomHook) ? getSlackIncomingWebhookUrl() :
+        final String slackIncomingWebhookUrl = StringUtils.isEmpty(projectCustomHook) ? this.getSlackIncomingWebhookUrl() :
             projectCustomHook;
-        Request.Builder requestBuilder = new Request.Builder().url(slackIncomingWebhookUrl);
-        requestBuilder.addHeader("content-type", "application/x-www-form-urlencoded");
-        requestBuilder.post(RequestBody.create(MediaType.parse("application/x-www-form-urlencoded"), payloadJson));
-        final Request request = requestBuilder.build();
+        final Request request = this.buildRequest(payloadJson, slackIncomingWebhookUrl);
         LOG.info("Request configuration: [uri={}, payload={}", request.url(), payloadJson);
 
-        try (Response response = httpClient.newCall(request).execute()) {
+        try (final Response response = this.httpClient.newCall(request).execute()) {
             LOG.info("Slack HTTP response status: {}", response.code());
             if (!response.isSuccessful()) {
                 throw new IllegalArgumentException("The Slack response has failed");
@@ -117,9 +126,17 @@ public class SlackHttpClient {
         return false;
     }
 
+    @NotNull
+    private Request buildRequest(final String payloadJson, final String slackIncomingWebhookUrl) {
+        final Request.Builder requestBuilder = new Request.Builder().url(slackIncomingWebhookUrl);
+        requestBuilder.addHeader(CONTENT_TYPE, APPLICATION_X_WWW_FORM_URLENCODED);
+        requestBuilder.post(RequestBody.create(payloadJson, MediaType.parse(APPLICATION_X_WWW_FORM_URLENCODED)));
+        return requestBuilder.build();
+    }
+
     protected String getSlackIncomingWebhookUrl() {
 
-        Optional<String> hook = settings.get(SlackNotifierProp.HOOK.property());
+        final Optional<String> hook = this.settings.get(SlackNotifierProp.HOOK.property());
         return hook.orElseThrow(() -> new IllegalStateException("Hook property not found"));
     }
 }

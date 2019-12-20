@@ -14,14 +14,14 @@ import static com.koant.sonar.slacknotifier.common.SlackNotifierProp.*;
 public class SlackNotifierPlugin implements Plugin {
 
     private static final String CATEGORY = "Slack";
-    private static final String SUBCATEGORY = "CKS Slack Notifier";
+    private static final String SUBCATEGORY = "Sonar Slack Notifier";
 
     @Override
-    public void define(Context context) {
-        List<Object> extensions = new ArrayList<>();
+    public void define(final Context context) {
+        final List<Object> extensions = new ArrayList<>();
 
         // The configurable properties
-        addPluginPropertyDefinitions(extensions);
+        this.addPluginPropertyDefinitions(extensions);
 
         // The actual plugin component(s)
         extensions.add(SlackPostProjectAnalysisTask.class);
@@ -29,7 +29,7 @@ public class SlackNotifierPlugin implements Plugin {
         context.addExtensions(extensions);
     }
 
-    private void addPluginPropertyDefinitions(List<Object> extensions) {
+    private void addPluginPropertyDefinitions(final List<Object> extensions) {
         extensions.add(PropertyDefinition.builder(HOOK.property())
             .name("Slack web integration hook")
             .description("https://api.slack.com/incoming-webhooks")

@@ -19,17 +19,17 @@ import java.util.stream.Collectors;
 
 public class SlackNotifierPluginTest {
 
-    private SlackNotifierPlugin plugin = new SlackNotifierPlugin();
+    private final SlackNotifierPlugin plugin = new SlackNotifierPlugin();
 
     @Test
     public void define_expectedExtensionsAdded() {
 
-        Plugin.Context mockContext = mock(Plugin.Context.class);
-        plugin.define(mockContext);
-        ArgumentCaptor<List> arg = ArgumentCaptor.forClass(List.class);
+        final Plugin.Context mockContext = mock(Plugin.Context.class);
+        this.plugin.define(mockContext);
+        final ArgumentCaptor<List> arg = ArgumentCaptor.forClass(List.class);
         verify(mockContext, times(1)).addExtensions(arg.capture());
 
-        List extensions = arg.getValue();
+        final List extensions = arg.getValue();
         Assert.assertEquals(10, extensions.size());
         Assert.assertEquals(HOOK.property(), ((PropertyDefinition) extensions.get(0)).key());
         Assert.assertEquals(USER.property(), ((PropertyDefinition) extensions.get(1)).key());
@@ -48,14 +48,14 @@ public class SlackNotifierPluginTest {
     @Test
     public void define_noDuplicateIndexes() {
 
-        Plugin.Context mockContext = mock(Plugin.Context.class);
-        plugin.define(mockContext);
-        ArgumentCaptor<List> arg = ArgumentCaptor.forClass(List.class);
+        final Plugin.Context mockContext = mock(Plugin.Context.class);
+        this.plugin.define(mockContext);
+        final ArgumentCaptor<List> arg = ArgumentCaptor.forClass(List.class);
         verify(mockContext, times(1)).addExtensions(arg.capture());
 
-        List<Object> extensions = arg.getValue();
+        final List<Object> extensions = arg.getValue();
 
-        Set<Integer> indexes = extensions.stream().filter(PropertyDefinition.class::isInstance)
+        final Set<Integer> indexes = extensions.stream().filter(PropertyDefinition.class::isInstance)
             .map(PropertyDefinition.class::cast).map(PropertyDefinition::index).
                 collect(Collectors.toSet());
         Assert.assertEquals(9, indexes.size());

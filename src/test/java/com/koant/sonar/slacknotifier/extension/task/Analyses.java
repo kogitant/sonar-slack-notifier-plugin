@@ -29,7 +29,7 @@ public class Analyses {
             .setStatus(CeTask.Status.SUCCESS)
             .build();
 
-    public static void simple(PostProjectAnalysisTask analysisTask) {
+    public static void simple(final PostProjectAnalysisTask analysisTask) {
         PostProjectAnalysisTaskTester.of(analysisTask)
                 .withCeTask(CE_TASK)
                 .withProject(PROJECT)
@@ -52,7 +52,7 @@ public class Analyses {
     }
 
 
-    public static void simpleDifferentKey(PostProjectAnalysisTask analysisTask) {
+    public static void simpleDifferentKey(final PostProjectAnalysisTask analysisTask) {
         PostProjectAnalysisTaskTester.of(analysisTask)
                 .withCeTask(CE_TASK)
                 .withProject(PostProjectAnalysisTaskTester.newProjectBuilder()
@@ -79,7 +79,7 @@ public class Analyses {
                 .execute();
     }
 
-    public static void qualityGateOk4Conditions(PostProjectAnalysisTask analysisTask) {
+    public static void qualityGateOk4Conditions(final PostProjectAnalysisTask analysisTask) {
         PostProjectAnalysisTaskTester.of(analysisTask)
                 .withCeTask(CE_TASK)
                 .withProject(PROJECT)
@@ -118,7 +118,7 @@ public class Analyses {
                 .execute();
     }
 
-    public static void qualityGateError2Of3ConditionsFailed(PostProjectAnalysisTask analysisTask) {
+    public static void qualityGateError2Of3ConditionsFailed(final PostProjectAnalysisTask analysisTask) {
         PostProjectAnalysisTaskTester.of(analysisTask)
                 .withCeTask(CE_TASK)
                 .withProject(PROJECT)
@@ -148,7 +148,7 @@ public class Analyses {
     }
 
 
-    public static void noQualityGate(PostProjectAnalysisTask analysisTask) {
+    public static void noQualityGate(final PostProjectAnalysisTask analysisTask) {
         PostProjectAnalysisTaskTester.of(analysisTask)
                 .withCeTask(CE_TASK)
                 .withProject(PROJECT)
@@ -156,7 +156,7 @@ public class Analyses {
                 .execute();
     }
 
-    public static void withBranch(PostProjectAnalysisTask analysisTask, Branch branch) {
+    public static void withBranch(final PostProjectAnalysisTask analysisTask, final Branch branch) {
         PostProjectAnalysisTaskTester.of(analysisTask)
             .withCeTask(CE_TASK)
             .withProject(PROJECT)

@@ -13,11 +13,11 @@ public class ProjectConfigBuilder {
 
 
     public ProjectConfigBuilder from(final ProjectConfig c) {
-        this.projectHook = c.getProjectHook();
-        this.projectKeyOrRegExp = c.getProjectKey();
-        this.slackChannel = c.getSlackChannel();
-        this.notify = c.getNotify();
-        this.qgFailOnly = c.isQgFailOnly();
+        projectHook = c.getProjectHook();
+        projectKeyOrRegExp = c.getProjectKey();
+        slackChannel = c.getSlackChannel();
+        notify = c.getNotify();
+        qgFailOnly = c.isQgFailOnly();
         return this;
     }
 
@@ -48,24 +48,24 @@ public class ProjectConfigBuilder {
 
     public ProjectConfig build() {
         return new ProjectConfig(
-            projectHook,
-            projectKeyOrRegExp,
-            slackChannel,
-            notify,
-            qgFailOnly
+            this.projectHook,
+            this.projectKeyOrRegExp,
+            this.slackChannel,
+            this.notify,
+            this.qgFailOnly
         );
     }
 
 
-     public ProjectConfigBuilder withConfiguration(Configuration settings, String configurationPrefix) {
-        projectHook =
+     public ProjectConfigBuilder withConfiguration(final Configuration settings, final String configurationPrefix) {
+         this.projectHook =
             settings.get(configurationPrefix + SlackNotifierProp.PROJECT_HOOK.property()).orElse(null);
-        projectKeyOrRegExp =
+         this.projectKeyOrRegExp =
             settings.get(configurationPrefix + SlackNotifierProp.PROJECT_REGEXP.property()).orElse("");
-        slackChannel =
+         this.slackChannel =
             settings.get(configurationPrefix + SlackNotifierProp.CHANNEL.property()).orElseThrow(() -> new IllegalStateException("No slack channel configured, unable to continue") );
-        notify = settings.get(configurationPrefix + SlackNotifierProp.NOTIFY.property()).orElse("");
-        qgFailOnly = settings.getBoolean(
+         this.notify = settings.get(configurationPrefix + SlackNotifierProp.NOTIFY.property()).orElse("");
+         this.qgFailOnly = settings.getBoolean(
             configurationPrefix + SlackNotifierProp.QG_FAIL_ONLY.property()).orElse(true);
         return this;
     }
