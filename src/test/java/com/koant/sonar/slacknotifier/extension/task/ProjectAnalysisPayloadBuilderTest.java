@@ -2,11 +2,14 @@ package com.koant.sonar.slacknotifier.extension.task;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.seratch.jslack.api.model.Attachment;
 import com.github.seratch.jslack.api.model.Field;
 import com.github.seratch.jslack.api.webhook.Payload;
 import com.koant.sonar.slacknotifier.common.component.ProjectConfig;
 import com.koant.sonar.slacknotifier.common.component.ProjectConfigBuilder;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -27,6 +30,7 @@ import java.util.Optional;
  * Created by ak on 18/10/16.
  * Modified by poznachowski
  */
+@Slf4j
 public class ProjectAnalysisPayloadBuilderTest {
     private static final boolean QG_FAIL_ONLY = true;
     private CaptorPostProjectAnalysisTask postProjectAnalysisTask;
@@ -66,7 +70,7 @@ public class ProjectAnalysisPayloadBuilderTest {
     }
 
     @Test
-    public void testPayloadBuilder() {
+    public void testPayloadBuilder() throws JsonProcessingException {
         Analyses.qualityGateOk4Conditions(this.postProjectAnalysisTask);
         final ProjectConfig projectConfig = new ProjectConfigBuilder().setProjectHook("hook")
                                                                 .setProjectKeyOrRegExp("key")
@@ -79,6 +83,10 @@ public class ProjectAnalysisPayloadBuilderTest {
                 .projectUrl("http://localhist:9000/dashboard?id=project:key")
                 .username("CKSSlackNotifier")
                 .build();
+
+        log.info("Generated : \n{}", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(payload));
+        log.info("Expected : \n{}", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this.expected()));
+
         assertThat(payload).isEqualTo(this.expected());
     }
 
@@ -97,7 +105,7 @@ public class ProjectAnalysisPayloadBuilderTest {
                 .build());
         fields.add(Field.builder()
                 .title("Technical Debt Ratio on New Code: OK")
-                .value("0.01%, warning if >2.0%, error if >10.0%")
+                .value("0.01%, error if >10.0%")
                 .valueShortEnough(false)
                 .build());
         fields.add(Field.builder()

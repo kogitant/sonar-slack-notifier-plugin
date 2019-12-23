@@ -170,12 +170,6 @@ class ProjectAnalysisPayloadBuilder {
             final StringBuilder sb = new StringBuilder();
             appendValue(condition, sb);
             appendValuePostfix(condition, sb);
-            if (condition.getWarningThreshold() != null) {
-                sb.append(", warning if ");
-                appendValueOperatorPrefix(condition, sb);
-                sb.append(condition.getWarningThreshold());
-                appendValuePostfix(condition, sb);
-            }
             if (condition.getErrorThreshold() != null) {
                 sb.append(", error if ");
                 appendValueOperatorPrefix(condition, sb);

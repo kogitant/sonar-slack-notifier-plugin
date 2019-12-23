@@ -48,7 +48,7 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
     }
 
     @Override
-    public void finished(final PostProjectAnalysisTask.Context context) {
+    public void finished(PostProjectAnalysisTask.Context context) {
 
         final ProjectAnalysis analysis = context.getProjectAnalysis();
         this.refreshSettings();

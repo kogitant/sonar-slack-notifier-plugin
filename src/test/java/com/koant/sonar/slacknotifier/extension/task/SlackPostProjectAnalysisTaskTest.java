@@ -9,6 +9,7 @@ import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.sonar.api.ce.posttask.PostProjectAnalysisTask;
 import org.sonar.api.config.Settings;
 import org.sonar.api.config.internal.ConfigurationBridge;
 import org.sonar.api.config.internal.MapSettings;
@@ -73,15 +74,29 @@ public class SlackPostProjectAnalysisTaskTest {
     public void shouldCall() throws Exception {
         Analyses.simple(this.postProjectAnalysisTask);
         when(this.httpClient.invokeSlackIncomingWebhook(ArgumentMatchers.eq(HOOK), isA(Payload.class))).thenReturn(true);
-        this.task.finished(this.postProjectAnalysisTask.getProjectAnalysis());
+        this.task.finished(context(this.postProjectAnalysisTask.getProjectAnalysis()));
         verify(this.httpClient, times(1)).invokeSlackIncomingWebhook(ArgumentMatchers.eq(HOOK), isA(Payload.class));
+    }
+
+    private PostProjectAnalysisTask.Context context(PostProjectAnalysisTask.ProjectAnalysis projectAnalysis) {
+        return new PostProjectAnalysisTask.Context() {
+            @Override
+            public PostProjectAnalysisTask.ProjectAnalysis getProjectAnalysis() {
+                return projectAnalysis;
+            }
+
+            @Override
+            public PostProjectAnalysisTask.LogStatistics getLogStatistics() {
+                return null;
+            }
+        };
     }
 
     @Test
     public void shouldSkipIfPluginDisabled() throws Exception {
         this.settings.setProperty(ENABLED.property(), "false");
         Analyses.simple(this.postProjectAnalysisTask);
-        this.task.finished(this.postProjectAnalysisTask.getProjectAnalysis());
+        this.task.finished(context(this.postProjectAnalysisTask.getProjectAnalysis()));
         verifyNoInteractions(this.httpClient);
     }
 
@@ -89,7 +104,7 @@ public class SlackPostProjectAnalysisTaskTest {
     public void shouldSkipIfReportFailedQualityGateButOk() throws Exception {
         this.settings.setProperty(CONFIG.property() + "." + PROJECT_KEY + "." + QG_FAIL_ONLY.property(), "true");
         Analyses.simple(this.postProjectAnalysisTask);
-        this.task.finished(this.postProjectAnalysisTask.getProjectAnalysis());
+        this.task.finished(context(this.postProjectAnalysisTask.getProjectAnalysis()));
         verifyNoInteractions(this.httpClient);
     }
 }
