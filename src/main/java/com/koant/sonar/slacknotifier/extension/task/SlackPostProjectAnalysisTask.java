@@ -3,6 +3,7 @@ package com.koant.sonar.slacknotifier.extension.task;
 import com.github.seratch.jslack.api.webhook.Payload;
 import com.koant.sonar.slacknotifier.common.component.AbstractSlackNotifyingComponent;
 import com.koant.sonar.slacknotifier.common.component.ProjectConfig;
+import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.util.VisibleForTesting;
 import org.sonar.api.ce.posttask.PostProjectAnalysisTask;
 import org.sonar.api.config.Configuration;
@@ -69,6 +70,17 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
 
         // final var projectConfig =
         ProjectConfig projectConfig = projectConfigOptional.get();
+        String targetBranch = getTargetBranch(projectConfig);
+        String builtBranch = context.getProjectAnalysis().getBranch().map(b -> b.getName()).orElse(Optional.of("")).get();
+
+        LOG.info("Project Key : {}", projectConfig.getProjectKey());
+        LOG.info("targetBranch- {}  / builtBranch {}", targetBranch, builtBranch);
+        if(StringUtils.isNotBlank(targetBranch) && !StringUtils.equals(targetBranch, builtBranch)) {
+            LOG.info("Branch doesn match, returing ...");
+            return;
+        }
+
+        LOG.info("Is moving forward");
         if (this.shouldSkipSendingNotification(projectConfig, analysis.getQualityGate())) {
             return;
         }
@@ -98,7 +110,13 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
             LOG.error("Failed to send slack message {}", e.getMessage(), e);
         }
     }
-
+    private String getTargetBranch(ProjectConfig projectConfig) {
+        String[] split = projectConfig.getProjectKey().split(";");
+        if (split.length == 2) {
+            return split[1];
+        }
+        return "";
+    }
     private String getSlackHook(final ProjectConfig projectConfig) {
         String hook = projectConfig.getProjectHook();
         if (hook != null) {
