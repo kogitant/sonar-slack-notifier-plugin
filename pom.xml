@@ -14,7 +14,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-    <java.version>11</java.version>
+    <java.version>1.8</java.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <sourceDirectory>src/main/java</sourceDirectory>
@@ -139,7 +139,7 @@
         <configuration>
           <jarName>sonar-slack-notifier-${project.version}</jarName>
           <pluginKey>sonar-slack-notifier</pluginKey>
-          <pluginClass>com.byoskill.sonar.slacknotifier.SlackNotifierPlugin</pluginClass>
+          <pluginClass>com.koant.sonar.slacknotifier.SlackNotifierPlugin</pluginClass>
           <pluginName>Sonar Slack Notifier</pluginName>
           <pluginDescription>Sends notifications to Slack</pluginDescription>
           <sonarQubeMinVersion>8.0</sonarQubeMinVersion>

@@ -1,5 +1,6 @@
 package com.koant.sonar.slacknotifier.extension.task;
 
+import com.github.seratch.jslack.api.webhook.Payload;
 import com.koant.sonar.slacknotifier.common.component.AbstractSlackNotifyingComponent;
 import com.koant.sonar.slacknotifier.common.component.ProjectConfig;
 import org.assertj.core.util.VisibleForTesting;
@@ -66,7 +67,8 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
         }
 
 
-        final var projectConfig = projectConfigOptional.get();
+        // final var projectConfig =
+        ProjectConfig projectConfig = projectConfigOptional.get();
         if (this.shouldSkipSendingNotification(projectConfig, analysis.getQualityGate())) {
             return;
         }
@@ -75,7 +77,8 @@ public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponen
 
         LOG.info("Slack notification will be sent: {}", analysis.toString());
 
-        final var payload = ProjectAnalysisPayloadBuilder.of(analysis)
+        //final var payload =
+        Payload payload = ProjectAnalysisPayloadBuilder.of(analysis)
             .i18n(this.i18n)
             .projectConfig(projectConfig)
             .projectUrl(this.projectUrl(projectKey))
