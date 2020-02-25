@@ -2,6 +2,7 @@ package com.koant.sonar.slacknotifier.common.component;
 
 import com.koant.sonar.slacknotifier.common.SlackNotifierProp;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.sonar.api.ce.posttask.QualityGate;
 import org.sonar.api.config.Configuration;
@@ -45,10 +46,12 @@ public abstract class AbstractSlackNotifyingComponent {
 
     private void refreshProjectConfigs() {
         log.info("Refreshing project configs");
-        final var oldValues = projectConfigMap.values().stream().
+        // final var oldValues =
+        Set<ProjectConfig> oldValues = projectConfigMap.values().stream().
             map(ProjectConfigBuilder::cloneProjectConfig).collect(Collectors.toSet());
         projectConfigMap = buildProjectConfigByProjectKeyMap(configuration);
-        final var newValues = new HashSet<>(projectConfigMap.values());
+        // final Set newValues =
+        Set<ProjectConfig> newValues = new HashSet<>(projectConfigMap.values());
         if (!oldValues.equals(newValues)) {
             log.info("Old configs [{}] --> new configs [{}]", oldValues, newValues);
         }
@@ -134,11 +137,16 @@ public abstract class AbstractSlackNotifyingComponent {
 
     @NotNull
     private List<ProjectConfig> searchForProjectConfig(final String projectKey) {
-        return this.projectConfigMap.keySet()
-            .stream()
-            .filter(projectKey::matches)
-            .map(this.projectConfigMap::get)
-            .collect(Collectors.toList());
+        List<ProjectConfig> list = new ArrayList<>();
+        Map<String, ProjectConfig> stringProjectConfigMap = this.projectConfigMap;
+        for (String s : this.projectConfigMap.keySet()) {
+            //if (projectKey.matches(s)) {
+            if (StringUtils.contains(s, projectKey)) {
+                ProjectConfig projectConfig = stringProjectConfigMap.get(s);
+                list.add(projectConfig);
+            }
+        }
+        return list;
     }
 
     @NotNull
