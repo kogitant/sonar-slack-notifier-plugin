@@ -1,16 +1,24 @@
 package com.koant.sonar.slacknotifier.extension.task;
 
-import org.sonar.api.ce.posttask.*;
+import static org.sonar.api.ce.posttask.PostProjectAnalysisTaskTester.newCeTaskBuilder;
+import static org.sonar.api.ce.posttask.PostProjectAnalysisTaskTester.newConditionBuilder;
+import static org.sonar.api.ce.posttask.PostProjectAnalysisTaskTester.newQualityGateBuilder;
+import static org.sonar.api.ce.posttask.PostProjectAnalysisTaskTester.newScannerContextBuilder;
+
+import org.sonar.api.ce.posttask.Branch;
+import org.sonar.api.ce.posttask.CeTask;
+import org.sonar.api.ce.posttask.PostProjectAnalysisTask;
+import org.sonar.api.ce.posttask.PostProjectAnalysisTaskTester;
+import org.sonar.api.ce.posttask.Project;
+import org.sonar.api.ce.posttask.QualityGate;
 import org.sonar.api.measures.CoreMetrics;
 
 import java.util.Date;
 
-import static org.sonar.api.ce.posttask.PostProjectAnalysisTaskTester.*;
-
 public class Analyses {
 
-    public static final String PROJECT_KEY = "project:key";
-    private static final String PROJECT_NAME = "Project Name";
+    public static final String PROJECT_KEY = "my-sonar-project-key";
+    private static final String PROJECT_NAME = "Sonar Project Name";
     private static final Project PROJECT = PostProjectAnalysisTaskTester.newProjectBuilder()
             .setUuid("uuid")
             .setKey(PROJECT_KEY)
@@ -21,12 +29,11 @@ public class Analyses {
             .setStatus(CeTask.Status.SUCCESS)
             .build();
 
-    public static void simple(PostProjectAnalysisTask analysisTask) {
+    public static void simple(final PostProjectAnalysisTask analysisTask) {
         PostProjectAnalysisTaskTester.of(analysisTask)
                 .withCeTask(CE_TASK)
                 .withProject(PROJECT)
-                .withScannerContext(newScannerContextBuilder()
-                .build())
+                .withScannerContext(newScannerContextBuilder().build())
                 .at(new Date())
                 .withQualityGate(
                         newQualityGateBuilder()
@@ -44,7 +51,8 @@ public class Analyses {
                 .execute();
     }
 
-    public static void simpleDifferentKey(PostProjectAnalysisTask analysisTask) {
+
+    public static void simpleDifferentKey(final PostProjectAnalysisTask analysisTask) {
         PostProjectAnalysisTaskTester.of(analysisTask)
                 .withCeTask(CE_TASK)
                 .withProject(PostProjectAnalysisTaskTester.newProjectBuilder()
@@ -71,7 +79,7 @@ public class Analyses {
                 .execute();
     }
 
-    public static void qualityGateOk4Conditions(PostProjectAnalysisTask analysisTask) {
+    public static void qualityGateOk4Conditions(final PostProjectAnalysisTask analysisTask) {
         PostProjectAnalysisTaskTester.of(analysisTask)
                 .withCeTask(CE_TASK)
                 .withProject(PROJECT)
@@ -110,7 +118,7 @@ public class Analyses {
                 .execute();
     }
 
-    public static void qualityGateError2Of3ConditionsFailed(PostProjectAnalysisTask analysisTask) {
+    public static void qualityGateError2Of3ConditionsFailed(final PostProjectAnalysisTask analysisTask) {
         PostProjectAnalysisTaskTester.of(analysisTask)
                 .withCeTask(CE_TASK)
                 .withProject(PROJECT)
@@ -123,11 +131,11 @@ public class Analyses {
                                 .add(newConditionBuilder()
                                         .setMetricKey(CoreMetrics.BUGS_KEY)
                                         .setOperator(QualityGate.Operator.GREATER_THAN)
-                                        .setWarningThreshold("2")
+                                        .setErrorThreshold("2")
                                         .build(QualityGate.EvaluationStatus.OK, "0"))
                                 .add(newConditionBuilder()
                                         .setMetricKey(CoreMetrics.FUNCTIONS_KEY)
-                                        .setWarningThreshold("0")
+                                        .setErrorThreshold("0")
                                         .setOperator(QualityGate.Operator.GREATER_THAN)
                                         .build(QualityGate.EvaluationStatus.WARN, "1"))
                                 .add(newConditionBuilder()
@@ -140,11 +148,21 @@ public class Analyses {
     }
 
 
-    public static void noQualityGate(PostProjectAnalysisTask analysisTask) {
+    public static void noQualityGate(final PostProjectAnalysisTask analysisTask) {
         PostProjectAnalysisTaskTester.of(analysisTask)
                 .withCeTask(CE_TASK)
                 .withProject(PROJECT)
                 .at(new Date())
                 .execute();
+    }
+
+    public static void withBranch(final PostProjectAnalysisTask analysisTask, final Branch branch) {
+        PostProjectAnalysisTaskTester.of(analysisTask)
+            .withCeTask(CE_TASK)
+            .withProject(PROJECT)
+            .withBranch(branch)
+            .at(new Date())
+            .withScannerContext(newScannerContextBuilder().build())
+            .execute();
     }
 }

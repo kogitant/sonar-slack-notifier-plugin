@@ -1,12 +1,12 @@
 package com.koant.sonar.slacknotifier.extension.task;
 
-import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.webhook.Payload;
-import com.github.seratch.jslack.api.webhook.WebhookResponse;
 import com.koant.sonar.slacknotifier.common.component.AbstractSlackNotifyingComponent;
 import com.koant.sonar.slacknotifier.common.component.ProjectConfig;
+import org.apache.commons.lang3.StringUtils;
+import org.assertj.core.util.VisibleForTesting;
 import org.sonar.api.ce.posttask.PostProjectAnalysisTask;
-import org.sonar.api.config.Settings;
+import org.sonar.api.config.Configuration;
 import org.sonar.api.i18n.I18n;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
@@ -16,68 +16,120 @@ import java.util.Optional;
 
 /**
  * Created by 616286 on 3.6.2016.
- * Modified by poznachowski
+ * Modified by gmilosavljevic
  */
 public class SlackPostProjectAnalysisTask extends AbstractSlackNotifyingComponent implements PostProjectAnalysisTask {
 
     private static final Logger LOG = Loggers.get(SlackPostProjectAnalysisTask.class);
 
     private final I18n i18n;
-    private final Slack slackClient;
+    private final SlackHttpClient httpClient;
 
-    public SlackPostProjectAnalysisTask(Settings settings, I18n i18n) {
-        this(Slack.getInstance(), settings, i18n);
+    @VisibleForTesting
+    SlackPostProjectAnalysisTask(final SlackHttpClient httpClient, final Configuration settings, final I18n i18n) {
+        super(settings);
+        this.i18n = i18n;
+        this.httpClient = httpClient;
     }
 
-    public SlackPostProjectAnalysisTask(Slack slackClient, Settings settings, I18n i18n) {
+    /**
+     * Default constructor invoked by SonarQube.
+     *
+     * @param settings
+     * @param i18n
+     */
+    public SlackPostProjectAnalysisTask(final Configuration settings, final I18n i18n) {
         super(settings);
-        this.slackClient = slackClient;
         this.i18n = i18n;
+        httpClient = new SlackHttpClient(settings);
+
+    }
+
+    public String getDescription() {
+        return "Sonar Plugin to offer Slack Notifications globally or per-project";
     }
 
     @Override
-    public void finished(ProjectAnalysis analysis) {
-        refreshSettings();
-        if (!isPluginEnabled()) {
-            LOG.info("Slack notifier plugin disabled, skipping. Settings are [{}]", logRelevantSettings());
+    public void finished(PostProjectAnalysisTask.Context context) {
+
+        final ProjectAnalysis analysis = context.getProjectAnalysis();
+        this.refreshSettings();
+        if (!this.isPluginEnabled()) {
+            LOG.info("Slack notifier plugin disabled, skipping. Settings are [{}]", this.logRelevantSettings());
             return;
         }
         LOG.info("Analysis ScannerContext: [{}]", analysis.getScannerContext().getProperties());
-        String projectKey = analysis.getProject().getKey();
+        final String projectKey = analysis.getProject().getKey();
 
-        Optional<ProjectConfig> projectConfigOptional = getProjectConfig(projectKey);
+        LOG.info("Looking for the configuration of the project {}", projectKey);
+        final Optional<ProjectConfig> projectConfigOptional = this.getProjectConfig(projectKey);
         if (!projectConfigOptional.isPresent()) {
             return;
         }
 
+
+        // final var projectConfig =
         ProjectConfig projectConfig = projectConfigOptional.get();
-        if (shouldSkipSendingNotification(projectConfig, analysis.getQualityGate())) {
+        String targetBranch = getTargetBranch(projectConfig);
+        String builtBranch = context.getProjectAnalysis().getBranch().map(b -> b.getName()).orElse(Optional.of("")).get();
+
+        LOG.info("Project Key : {}", projectConfig.getProjectKey());
+        LOG.info("targetBranch- {}  / builtBranch {}", targetBranch, builtBranch);
+        if(StringUtils.isNotBlank(targetBranch) && !StringUtils.equals(targetBranch, builtBranch)) {
+            LOG.info("Branch doesn match, returing ...");
             return;
         }
 
-        LOG.info("Slack notification will be sent: " + analysis.toString());
+        LOG.info("Is moving forward");
+        if (this.shouldSkipSendingNotification(projectConfig, analysis.getQualityGate())) {
+            return;
+        }
 
+        final String hook = this.getSlackHook(projectConfig);
+
+        LOG.info("Slack notification will be sent: {}", analysis.toString());
+
+        //final var payload =
         Payload payload = ProjectAnalysisPayloadBuilder.of(analysis)
-                .i18n(i18n)
-                .projectConfig(projectConfig)
-                .projectUrl(projectUrl(projectKey))
-                .username(getSlackUser())
-                .build();
+            .i18n(this.i18n)
+            .projectConfig(projectConfig)
+            .projectUrl(this.projectUrl(projectKey))
+            .includeBranch(this.isBranchEnabled())
+            .username(this.getSlackUser())
+            .iconUrl(this.getIconUrl())
+            .build();
 
         try {
-            // See https://github.com/seratch/jslack
-            WebhookResponse response = slackClient.send(getSlackIncomingWebhookUrl(), payload);
-            if (!Integer.valueOf(200).equals(response.getCode())) {
-                LOG.error("Failed to post to slack, response is [{}]", response);
+
+            if (httpClient.invokeSlackIncomingWebhook(hook, payload)) {
+                LOG.info("Slack webhook invoked with success.");
+            } else {
+                throw new IllegalArgumentException("The Slack response has failed");
             }
-        } catch (IOException e) {
-            LOG.error("Failed to send slack message", e);
+        } catch (final IOException e) {
+            LOG.error("Failed to send slack message {}", e.getMessage(), e);
         }
     }
-
-    private String projectUrl(String projectKey) {
-        return getSonarServerUrl() + "dashboard?id=" + projectKey;
+    private String getTargetBranch(ProjectConfig projectConfig) {
+        String[] split = projectConfig.getProjectKey().split(";");
+        if (split.length == 2) {
+            return split[1];
+        }
+        return "";
+    }
+    private String getSlackHook(final ProjectConfig projectConfig) {
+        String hook = projectConfig.getProjectHook();
+        if (hook != null) {
+            hook = hook.trim();
+        }
+        LOG.info("Hook is: {}", hook);
+        if (hook == null || hook.isEmpty()) {
+            hook = this.getDefaultHook();
+        }
+        return hook;
     }
 
-
+    private String projectUrl(final String projectKey) {
+        return this.getSonarServerUrl() + "dashboard?id=" + projectKey;
+    }
 }

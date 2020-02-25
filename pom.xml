@@ -1,31 +1,37 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.koant.sonar.slack</groupId>
-  <artifactId>cks-slack-notifier</artifactId>
-  <version>2.2-SNAPSHOT</version>
+  <groupId>com.byoskill.sonar.slack</groupId>
+  <artifactId>sonar-slack-notifier</artifactId>
+  <version>8.0.0-beta</version>
   <packaging>sonar-plugin</packaging>
 
-  <name>CKS Slack Notifier Plugin</name>
+  <name>Sonar Slack Notifier Plugin</name>
   <description>Sends notifications to Slack.</description>
 
   <properties>
+    <sonar.pluginName>Slack Notifier</sonar.pluginName>
+
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <sonar.pluginName>Slack Notifier</sonar.pluginName>
-    <project.targetJdk>1.8</project.targetJdk>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+
+    <java.version>1.8</java.version>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+    <sourceDirectory>src/main/java</sourceDirectory>
+    <testSourceDirectory>src/test/java</testSourceDirectory>
+
+    <jacoco.version>0.8.5</jacoco.version>
 
     <!-- JaCoCo support -->
     <argLine />
-    <sonar.version>6.1</sonar.version>
+    <sonar.version>8.0</sonar.version>
+    <jackson-databind.version>2.10.1</jackson-databind.version>
   </properties>
 
   <scm>
-    <connection>scm:git:git@github.com:kogitant/sonar-slack-notifier-plugin.git</connection>
-    <url>scm:git:git@github.com:kogitant/sonar-slack-notifier-plugin.git</url>
-    <developerConnection>scm:git:git@github.com:kogitant/sonar-slack-notifier-plugin.git</developerConnection>
-    <tag>HEAD</tag>
+    <connection>scm:git:git@github.com:sleroy/sonar-slack-notifier-plugin.git</connection>
+    <url>scm:git:git@github.com:sleroy/sonar-slack-notifier-plugin.git</url>
+    <developerConnection>scm:git:git@github.com:sleroy/sonar-slack-notifier-plugin.git</developerConnection>
   </scm>
   
 
@@ -39,36 +45,42 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-      <version>1.2</version>
-      <scope>provided</scope>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.9</version>
     </dependency>
 
     <!-- Dependencies of this plugin, not provided by SonarQube -->
     <dependency>
       <groupId>com.github.seratch</groupId>
       <artifactId>jslack</artifactId>
-      <version>1.0.3</version>
+      <version>3.3.0</version>
     </dependency>
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp</artifactId>
+      <version>4.2.2</version>
+    </dependency>
+
 
     <!-- Testing dependencies -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.12</version>
-      <scope>test</scope>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>3.3.0</version>
+      <version>3.14.0</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <version>1.10.19</version>
-      <scope>test</scope>
+      <artifactId>mockito-core</artifactId>
+      <version>3.2.4</version>
+      <scope>compile</scope>
     </dependency>
 
     <!-- This is needed in tests to assert i18n behaviour -->
@@ -78,80 +90,64 @@
       <version>${sonar.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>1.18.10</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>${jackson-databind.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>${jackson-databind.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson-databind.version}</version>
+      <scope>test</scope>
+    </dependency>
+
 
   </dependencies>
 
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <version>1.3.1</version>
-        <executions>
-          <execution>
-            <id>enforce-versions</id>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <requireMavenVersion>
-                  <version>[3.1,)</version>
-                </requireMavenVersion>
-                <requireJavaVersion>
-                  <version>[${project.targetJdk},)</version>
-                </requireJavaVersion>
-              </rules>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.19.1</version>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.19.1</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>integration-test</goal>
-              <goal>verify</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.7.7.201606060606</version>
+        <version>${jacoco.version}</version>
       </plugin>
       <plugin>
         <groupId>org.sonarsource.scanner.maven</groupId>
         <artifactId>sonar-maven-plugin</artifactId>
-        <version>3.1.1</version>
+        <version>3.7.0.1746</version>
       </plugin>
       <plugin>
         <groupId>org.sonarsource.sonar-packaging-maven-plugin</groupId>
         <artifactId>sonar-packaging-maven-plugin</artifactId>
-        <version>1.17</version>
+        <version>1.18.0.372</version>
         <extensions>true</extensions>
         <configuration>
-          <jarName>cks-slack-notifier-${project.version}</jarName>
-          <pluginKey>cks-slack-notifier</pluginKey>
+          <jarName>sonar-slack-notifier-${project.version}</jarName>
+          <pluginKey>sonar-slack-notifier</pluginKey>
           <pluginClass>com.koant.sonar.slacknotifier.SlackNotifierPlugin</pluginClass>
-          <pluginName>CKS Slack Notifier</pluginName>
+          <pluginName>Sonar Slack Notifier</pluginName>
           <pluginDescription>Sends notifications to Slack</pluginDescription>
-          <sonarQubeMinVersion>6.1</sonarQubeMinVersion>
-          <pluginUrl>https://github.com/kogitant/sonar-slack-notifier-plugin</pluginUrl>
-          <pluginIssueTrackerUrl>https://github.com/kogitant/sonar-slack-notifier-plugin/issues</pluginIssueTrackerUrl>
-          <pluginSourcesUrl>https://github.com/kogitant/sonar-slack-notifier-plugin</pluginSourcesUrl>
-          <pluginOrganizationName>Antti Koivisto</pluginOrganizationName>
-          <pluginOrganizationUrl>https://github.com/kogitant</pluginOrganizationUrl>
+          <sonarQubeMinVersion>8.0</sonarQubeMinVersion>
+          <pluginUrl>https://github.com/sleroy/sonar-slack-notifier-plugin</pluginUrl>
+          <pluginIssueTrackerUrl>https://github.com/sleroy/sonar-slack-notifier-plugin/issues</pluginIssueTrackerUrl>
+          <pluginSourcesUrl>https://github.com/sleroy/sonar-slack-notifier-plugin</pluginSourcesUrl>
+          <pluginOrganizationName>Sylvain Leroy</pluginOrganizationName>
+          <pluginOrganizationUrl>https://github.com/sleroy</pluginOrganizationUrl>
         </configuration>
       </plugin>
     </plugins>

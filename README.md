@@ -1,3 +1,12 @@
+# Warning
+
+This project is a fork of the original work from https://github.com/kogitant/sonar-slack-notifier-plugin.
+I made modifications to keep it working for the latest versions of SonarQube.
+
+## Pre-requisites
+
+The actual version is compiled for *SonarQube v8.0 and JDK 11*.
+
 # CKS Sonar Slack Notifier Plugin
 SonarQube plugin for sending notifications to Slack
 
@@ -8,7 +17,7 @@ The plugin uses Incoming Web Hook as the integration mechanism with Slack.
 The plugin must be placed in *SONAR_HOME/extensions/plugins* directory and SonarQube must be restarted.
 
 ## Using latest release
-You can find the latest release from https://github.com/kogitant/sonar-slack-notifier-plugin/releases/ page.
+You can find the latest release from https://github.com/sleroy/sonar-slack-notifier-plugin/releases/ page.
 Download the 
 
 ## From sources
@@ -32,11 +41,12 @@ Under it you can find the CKS Slack Notifier plugin configurations:
 ![](documentation/screenshots/administration_cks_slack_notifier_settings.png?raw=true)
 
 In the above example there is a Project Key to Slack Channel configuration for an example project.
+You can override the globally  defined web-hook, if you like. Example use case: You want a project to notify a different Slack team.  
 The project key of any SonarQube project can be found in the project page (bottom right corner):
 ![](documentation/screenshots/project_key_from_project_page.png?raw=true)
 
 ## Wildcard support
-The project key supports wildcards at the end. See https://github.com/kogitant/sonar-slack-notifier-plugin/issues/2
+The project key supports wildcards at the end. See https://github.com/sleroy/sonar-slack-notifier-plugin/issues/2
 
 ## Only send notification when Quality Gate fails
 Notifications can be sent for all Quality Gate statuses, or just for WARNING/ERROR statuses. See https://github.com/kogitant/sonar-slack-notifier-plugin/issues/1 
@@ -49,8 +59,7 @@ Notifications can be sent for all Quality Gate statuses, or just for WARNING/ERR
 ![](documentation/screenshots/example_slack_message_all_green.png)
 
 # Works with
-* Tested with SonarQube 6.1 against Slack on 2016.10.17
-* Tested with SonarQube 6.1 against Mattermost 3.5.0 on 2017.01.02
+* Tested with SonarQube 7.2 and 7.3 against Slack on 23.02.2019
 
 # Inspired by
 * https://github.com/astrebel/sonar-slack-notifier-plugin

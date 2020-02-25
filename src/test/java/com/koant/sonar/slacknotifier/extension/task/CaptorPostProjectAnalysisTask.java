@@ -5,12 +5,16 @@ import org.sonar.api.ce.posttask.PostProjectAnalysisTask;
 class CaptorPostProjectAnalysisTask implements PostProjectAnalysisTask {
     private ProjectAnalysis projectAnalysis;
 
+    public String getDescription() {
+        return "Capture the project informations";
+    }
+
     @Override
-    public void finished(ProjectAnalysis analysis) {
-        this.projectAnalysis = analysis;
+    public void finished(final ProjectAnalysis analysis) {
+        projectAnalysis = analysis;
     }
 
     public ProjectAnalysis getProjectAnalysis() {
-        return projectAnalysis;
+        return this.projectAnalysis;
     }
 }
