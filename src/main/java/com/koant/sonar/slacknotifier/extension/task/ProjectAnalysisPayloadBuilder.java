@@ -98,9 +98,10 @@ public class ProjectAnalysisPayloadBuilder {
 
     private String addChannelUsers() {
         StringBuilder channelUsers = new StringBuilder();
-        projectConfig.getChannelUsersToNotify()
+        projectConfig.getChannelUsersToNotify().stream()
+            .filter(s -> !s.trim().isEmpty())
             .forEach(user -> channelUsers.append("@")
-                .append(user)
+                .append(user.trim())
                 .append(USERS_PREFIX));
 
         if  (channelUsers.toString().isEmpty()) {
