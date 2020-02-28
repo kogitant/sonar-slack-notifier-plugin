@@ -48,7 +48,11 @@ public enum SlackNotifierProp {
     /**
      * @see SlackNotifierProp#CONFIG
      */
-    QG_FAIL_ONLY("qg");
+    QG_FAIL_ONLY("qg"),
+    /**
+     * @see SlackNotifierProp#CONFIG
+     */
+    CHANNEL_USERS("channel-users");
 
     private String property;
 

@@ -28,6 +28,7 @@ public class ProjectAnalysisPayloadBuilder {
     private static final String SLACK_WARNING_COLOUR = "warning";
     private static final String SLACK_DANGER_COLOUR = "danger";
     private static final Map<QualityGate.Status, String> statusToColor = new EnumMap<>(QualityGate.Status.class);
+    private static final String USERS_PREFIX = ", ";
 
     static {
         statusToColor.put(QualityGate.Status.OK, SLACK_GOOD_COLOUR);
@@ -82,17 +83,34 @@ public class ProjectAnalysisPayloadBuilder {
         assertNotNull(analysis, "analysis");
 
         QualityGate qualityGate = analysis.getQualityGate();
-        String shortText = String.join("",
-                "Project [", analysis.getProject().getName(), "] analyzed. See ",
-                projectUrl,
-                qualityGate == null ? "." : ". Quality gate status: " + qualityGate.getStatus());
+        String shortText = String.join("", addChannelUsers(),
+            "Project [", analysis.getProject().getName(), "] analyzed. See ",
+            projectUrl,
+            qualityGate == null ? "." : ". Quality gate status: " + qualityGate.getStatus());
 
         return Payload.builder()
-                .channel(projectConfig.getSlackChannel())
-                .username(slackUser)
-                .text(shortText)
-                .attachments(qualityGate == null ? null : buildConditionsAttachment(qualityGate, projectConfig.isQgFailOnly()))
-                .build();
+            .channel(projectConfig.getSlackChannel())
+            .username(slackUser)
+            .text(shortText)
+            .attachments(qualityGate == null ? null : buildConditionsAttachment(qualityGate, projectConfig.isQgFailOnly()))
+            .build();
+    }
+
+    private String addChannelUsers() {
+        StringBuilder channelUsers = new StringBuilder();
+        projectConfig.getChannelUsersToNotify().stream()
+            .filter(s -> !s.trim().isEmpty())
+            .forEach(user -> channelUsers.append("@")
+                .append(user.trim())
+                .append(USERS_PREFIX));
+
+        if  (channelUsers.toString().isEmpty()) {
+            return "";
+        } else {
+            channelUsers.deleteCharAt(channelUsers.length() - USERS_PREFIX.length());
+            channelUsers.append("-->");
+            return channelUsers.toString();
+        }
     }
 
     private void assertNotNull(Object object, String argumentName) {
@@ -105,20 +123,20 @@ public class ProjectAnalysisPayloadBuilder {
 
         List<Attachment> attachments = new ArrayList<>();
         attachments.add(Attachment.builder()
-                .fields(
-                        qualityGate.getConditions()
-                                .stream()
-                                .filter(condition -> !qgFailOnly || notOkNorNoValue(condition))
-                                .map(this::translate)
-                                .collect(Collectors.toList()))
-                .color(statusToColor.get(qualityGate.getStatus()))
-                .build());
+            .fields(
+                qualityGate.getConditions()
+                    .stream()
+                    .filter(condition -> !qgFailOnly || notOkNorNoValue(condition))
+                    .map(this::translate)
+                    .collect(Collectors.toList()))
+            .color(statusToColor.get(qualityGate.getStatus()))
+            .build());
         return attachments;
     }
 
     private boolean notOkNorNoValue(QualityGate.Condition condition) {
         return !(QualityGate.EvaluationStatus.OK.equals(condition.getStatus())
-                || QualityGate.EvaluationStatus.NO_VALUE.equals(condition.getStatus()));
+            || QualityGate.EvaluationStatus.NO_VALUE.equals(condition.getStatus()));
     }
 
     /**
@@ -134,9 +152,9 @@ public class ProjectAnalysisPayloadBuilder {
         if (QualityGate.EvaluationStatus.NO_VALUE.equals(condition.getStatus())) {
             // No value for given metric
             return Field.builder().title(conditionName)
-                    .value(condition.getStatus().name())
-                    .valueShortEnough(true)
-                    .build();
+                .value(condition.getStatus().name())
+                .valueShortEnough(true)
+                .build();
         } else {
             StringBuilder sb = new StringBuilder();
             appendValue(condition, sb);
@@ -154,9 +172,9 @@ public class ProjectAnalysisPayloadBuilder {
                 appendValuePostfix(condition, sb);
             }
             return Field.builder().title(conditionName + ": " + condition.getStatus().name())
-                    .value(sb.toString())
-                    .valueShortEnough(false)
-                    .build();
+                .value(sb.toString())
+                .valueShortEnough(false)
+                .build();
 
         }
     }
